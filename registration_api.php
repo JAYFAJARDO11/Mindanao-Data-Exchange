@@ -88,6 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
                 $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; 
                 $mail->Port = 587;  
 
+                // Temporary
                 $mail->SMTPOptions = [
                     'ssl' => [
                         'verify_peer' => false,
