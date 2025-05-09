@@ -73,6 +73,7 @@ $result = mysqli_query($conn, $sql);
             text-align: center;
             color: #0c1a36;
             margin-bottom: 15px;
+            padding-left: 20px;
         }
         #wrapper {
             max-width: 1240px;

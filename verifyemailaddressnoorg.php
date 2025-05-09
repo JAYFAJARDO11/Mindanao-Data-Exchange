@@ -61,7 +61,7 @@ session_start();
       }
 
       .verification-form button[type="submit"] {
-        background-color: #0d1b2a;
+        background-color: #0099ff;
         color: white;
         border: none;
         padding: 12px 30px;
@@ -72,7 +72,7 @@ session_start();
       }
 
       .verification-form button[type="submit"]:hover {
-        background-color: #1e2b3b;
+        background-color: #66c2ff;
       }
 
       .message {
@@ -93,9 +93,22 @@ session_start();
         border: 1px solid #f5c6cb;
       }
 
+      #background-video {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: -1; /* stays behind everything */
+        }
+
     </style>
 </head>
 <body>
+  <video autoplay muted loop id="background-video">
+        <source src="videos/bg6.mp4" type="video/mp4">
+    </video>
 
   <div class="content">
     <h2>VERIFY YOUR EMAIL ADDRESS</h2>

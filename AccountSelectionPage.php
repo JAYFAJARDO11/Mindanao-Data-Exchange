@@ -14,20 +14,22 @@ session_start();
             padding: 0;
             background-color: #E3F2FD;
             min-height: 100vh;
-            overflow: hidden;
+            overflow: auto;
         }
+
         
         .navbar {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 15px 5%;
-            background-color: #0c1a36;
+            padding: 15px 25.65px;
+            background-color: #0099ff;
             color: white;
         }
-        
+
         .logo img {
-            height: 50px;
+            height: 95px;
+            width: 100px;
         }
         
         .main-wrapper {
@@ -38,17 +40,17 @@ session_start();
         }
         
         .signup-container {
-            width: 1050px;
+            max-width: 1200px;
+            margin: 50px auto;
             background-color: white;
-            border: 1px solid black;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            height: 900px;
+            padding: 40px;
+            text-align: center;
+            border-radius: 12px;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
         }
         
         .content-row {
-            margin-top: 250px;
+            margin-top: 200px;
             display: grid; 
             grid-template-columns: repeat(3, 1fr); 
             row-gap: 100px; 
@@ -59,8 +61,7 @@ session_start();
         .description {
             flex: 1;
             padding: 0;
-
-            margin-top: -10px;
+            margin-top: -60px;
        
         }
         .description h2 {
@@ -84,7 +85,7 @@ session_start();
         }
         
         .account-individual a, .account-org a {
-            background-color: #0c1a36;
+            background-color: #0099ff;
             text-decoration: none;
             color: white;
             padding: 10px 20px;
@@ -93,7 +94,7 @@ session_start();
             cursor: pointer;
         }
         .account-individual a:hover, .account-org a:hover {
-            background-color: #142850;
+            background-color: #0099ff;
         }
         
         .cancel {
@@ -102,7 +103,7 @@ session_start();
         }
         .cancel .cancel-button{
             font-size: 30px;
-            background-color: #0c1a36;
+            background-color: #0099ff;
             text-decoration: none;
             color: white;
             padding: 10px 100px;
@@ -111,15 +112,27 @@ session_start();
             cursor: pointer;
         }
         .cancel .cancel-button:hover {
-            background-color: #142850;
+            background-color: #0099ff;
         }
         .cancel p {
             margin-top: 10px;
         }
+        #background-video {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: -1; /* stays behind everything */
+    }
         
     </style>
 </head>
 <body>
+    <video autoplay muted loop id="background-video">
+        <source src="videos/bg6.mp4" type="video/mp4">
+    </video>
     <header class="navbar">
         <div class="logo">
             <img src="images/mdx_logo.png" alt="MDX Logo">

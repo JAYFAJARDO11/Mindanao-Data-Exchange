@@ -88,6 +88,18 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
                 $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; 
                 $mail->Port = 587;  
 
+<<<<<<< HEAD
+                // Temporary
+                $mail->SMTPOptions = [
+                    'ssl' => [
+                        'verify_peer' => false,
+                        'verify_peer_name' => false,
+                        'allow_self_signed' => true
+                    ]
+                ];
+
+=======
+>>>>>>> ef78c54a7a1b77485f215488e4310735182ed9ef
                 // Recipients
                 $mail->setFrom('wazzupbymindex@gmail.com', 'Mindanao Data Exchange');
                 $mail->addAddress($email, $firstName);

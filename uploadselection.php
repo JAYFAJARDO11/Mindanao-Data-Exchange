@@ -91,6 +91,7 @@ session_start();
             object-fit: cover;
             cursor: pointer;
         }
+
         @media (max-width: 768px) {
             .stats-box {
                 flex-direction: column;
@@ -160,7 +161,7 @@ session_start();
             display: none;
         }
         .browse-btn {
-            background-color: #0c1a36;
+            background-color: #0099ff;
             color: white;
             padding: 10px;
             margin: 0 auto;
@@ -237,10 +238,9 @@ session_start();
     </style>
 </head>
 <body>
-<video autoplay muted loop id="background-video">
-        <source src="videos/background4.mp4" type="video/mp4">
+    <video autoplay muted loop id="background-video">
+        <source src="videos/bg6.mp4" type="video/mp4">
     </video>
-
 <div id="wrapper">
     <header class="navbar">
         <div class="logo">

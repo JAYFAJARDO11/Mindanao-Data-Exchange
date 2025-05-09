@@ -86,7 +86,7 @@ if (isset($_GET['error'])) {
             text-align: center;
         }
         .logo-container img {
-            background-color: #0c1a36;
+            background-color: #0099ff;
             border-radius: 15px;
             padding: 10px;
             width: 80px;
@@ -122,7 +122,7 @@ if (isset($_GET['error'])) {
             font-weight: bold;
         }
         button {
-            background-color: #0c1a36;
+            background-color: #0099ff;
             color: white;
             padding: 10px;
             border: none;
@@ -132,10 +132,10 @@ if (isset($_GET['error'])) {
             font-size: 18px;
         }
         button:hover {
-            background-color: #092045;
+            background-color: #66c2ff;
         }
         a {
-            color: #0c1a36;
+            color: #0099ff;
             text-decoration: none;
             font-size: 16px;
         }
@@ -144,7 +144,7 @@ if (isset($_GET['error'])) {
         }
         .login {
         display: block;
-        background-color: #0c1a36;
+        background-color: #0099ff;
         color: white;
         padding: 14px 25px;
         text-align: center;
