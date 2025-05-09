@@ -32,6 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
             're_enter_email' => $reEnterEmail,
             'password' => $password,
             're_enter_pass' => $reEnterPassword
+
         ];        
         header("Location: registrationdetailsnoorg.php");
         exit();
@@ -43,7 +44,8 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
             'lastname' => $lastName,
             'email_address' => $email,
             're_enter_email' => $reEnterEmail
-        ];        
+
+        ];       
         header("Location: registrationdetailsnoorg.php");
         exit();
     }
@@ -88,6 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
                 $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; 
                 $mail->Port = 587;  
 
+<<<<<<< HEAD
                 // Temporary
                 $mail->SMTPOptions = [
                     'ssl' => [
@@ -97,6 +100,8 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
                     ]
                 ];
 
+=======
+>>>>>>> ef78c54a7a1b77485f215488e4310735182ed9ef
                 // Recipients
                 $mail->setFrom('wazzupbymindex@gmail.com', 'Mindanao Data Exchange');
                 $mail->addAddress($email, $firstName);
