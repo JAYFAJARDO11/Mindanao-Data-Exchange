@@ -25,7 +25,7 @@
         padding-left:20px;
         padding-bottom: 20px;
         margin-bottom: 30px;
-        background-color:rgba(12, 26, 54, 0.8);
+        background-color: #0099ff;
     }
 
 
@@ -77,7 +77,7 @@
 
     .sign-out {
         margin-top: auto;
-        background-color: #0c1a36;
+        background-color: #0099ff;
         padding: 15px 20px;
         color: #ffffff;
         text-decoration: none;

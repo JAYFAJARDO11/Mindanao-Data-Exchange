@@ -37,7 +37,7 @@
             background-color: #e6f0fa;
         }
         .header {
-            background-color: #0c2239;
+            background-color: #0099ff;
             padding: 15px 25.65px;
         }
         .header img {
@@ -64,17 +64,17 @@
             line-height: 30px;
             margin: 0 auto 10px;
             border-radius: 50%;
-            background-color: #0c2239;
+            background-color: #0099ff;
             color: white;
         }
         .step.active .circle {
             background-color: white;
-            color: #0c2239;
-            border: 2px solid #0c2239;
+            color: #0099ff;
+            border: 2px solid #0099ff;
         }
         .step.active {
             font-weight: bold;
-            color: #0c2239;
+            color: #0099ff;
         }
         h1 {
             font-size: 2.5em;
@@ -117,7 +117,7 @@
         }
 
         .btn-next {
-            background-color: #0c2239;
+            background-color: #0099ff;
             color: white;
             padding: 15px 60px;
             border: none;
@@ -134,9 +134,22 @@
             font-size: 18px;
             cursor: pointer;
         }
+
+        #background-video {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: -1; /* stays behind everything */
+        }
     </style>
 </head>
 <body>
+    <video autoplay muted loop id="background-video">
+        <source src="videos/bg6.mp4" type="video/mp4">
+    </video>
 <div class="header">
         <img src="images/mdx_logo.png" alt="Logo">
     </div>

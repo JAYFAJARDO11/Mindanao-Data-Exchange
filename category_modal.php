@@ -11,10 +11,10 @@
             z-index: 1000;
         }
         h2{
-            color: #cfd9ff;
+            color: white;
         }
         .modal-content {
-            background-color: #0c1a36;
+            background-color: #0099ff;
             padding: 20px;
             border-radius: 10px;
             min-width: 300px;
