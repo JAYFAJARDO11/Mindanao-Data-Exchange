@@ -197,11 +197,11 @@
 
         <div class="input-group">
             <label for="password">Password:</label>
-            <input type="text" name="password" id="password" required>
+            <input type="password" name="password" id="password" required>
         </div>
         <div class="input-group">
             <label for="re_enter_pass">Re-enter Password:</label>
-            <input type="text" name="re_enter_pass" id="re_enter_pass" required>
+            <input type="password" name="re_enter_pass" id="re_enter_pass" required>
         </div>
     </div>
     <div class="button-group">
