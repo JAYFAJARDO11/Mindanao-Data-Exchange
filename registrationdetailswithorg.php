@@ -167,7 +167,12 @@
                 <div class="circle">3</div>
                 <div>Account created</div>
             </div> 
+            <div class="step active">
+                <div class="circle">4</div>
+                <div>Select Organzation</div>
         </div>
+        
+    </div>
     <h1>Provide the following information</h1>
 
     <form action="registrationdetailsnoorg.php" method="POST">
