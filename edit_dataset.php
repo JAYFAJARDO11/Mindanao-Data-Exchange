@@ -317,6 +317,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <title>Edit Dataset</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <?php include 'includes/background_styles.php'; ?>
     <style>
         html, body {
             height: 100%;
@@ -534,16 +535,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border: 1px solid #f5c2c7;
         }
 
-        #background-video {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: -1;
-        }
-
         .radio-group {
             display: flex;
             gap: 25px;
@@ -707,9 +698,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </style>
 </head>
 <body>
-    <video autoplay muted loop id="background-video">
-        <source src="videos/bg6.mp4" type="video/mp4">
-    </video>
 
     <div class="container">
         <header class="navbar">

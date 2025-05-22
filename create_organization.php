@@ -90,6 +90,7 @@ if ($organization_id) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Organization</title>
+    <?php include 'includes/background_styles.php'; ?>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -142,15 +143,6 @@ if ($organization_id) {
         }
         .navbar h2 {
             color: white;
-        }
-        #background-video {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: -1;
         }
         form { 
             max-width: 800px;  /* Increased from 500px to 800px */
@@ -219,9 +211,6 @@ if ($organization_id) {
     </style>
 </head>
 <body>
-    <video autoplay muted loop id="background-video">
-        <source src="videos/bg6.mp4" type="video/mp4">
-    </video>
 
     <header class="navbar">
         <div class="logo">

@@ -28,6 +28,32 @@ if (!$result || !$result->num_rows) {
 }
 $row = $result->fetch_assoc();
 $organizationName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $row['org_name']); // Sanitize folder name
+
+// Initialize the total_count variable
+$total_count = 0;
+
+// Get count of pending access requests for this user
+$request_count = 0;
+$requestCountSql = "SELECT COUNT(*) as count FROM dataset_access_requests 
+                    WHERE owner_id = $user_id AND status = 'Pending'";
+$requestCountResult = mysqli_query($conn, $requestCountSql);
+if ($requestCountResult) {
+    $row = mysqli_fetch_assoc($requestCountResult);
+    $request_count = $row['count'];
+}
+
+// Get count of unread notifications for this user
+$notif_count = 0;
+$notifCountSql = "SELECT COUNT(*) as count FROM user_notifications 
+                  WHERE user_id = $user_id AND is_read = FALSE";
+$notifCountResult = mysqli_query($conn, $notifCountSql);
+if ($notifCountResult) {
+    $row = mysqli_fetch_assoc($notifCountResult);
+    $notif_count = $row['count'];
+}
+
+// Total count for badge display (requests + notifications)
+$total_count = $request_count + $notif_count;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -36,6 +62,7 @@ $organizationName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $row['org_name']); //
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload Dataset</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <?php include 'includes/background_styles.php'; ?>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -60,13 +87,14 @@ $organizationName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $row['org_name']); //
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             position: relative;
             margin: 10px 0;
-            max-width: 1327px;
+            max-width: 1200px;
             width: 95%;
             margin-top: 30px;
             margin-left: auto;
             margin-right: auto;
             font-weight: bold;
             box-sizing: border-box;
+            z-index: 1000;
         }
         
         .logo {
@@ -81,6 +109,20 @@ $organizationName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $row['org_name']); //
             margin-right: 15px;
         }
         
+        .logo h2 {
+            color: white;
+            margin: 0;
+            font-size: 22px;
+            white-space: nowrap;
+        }
+        
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            position: relative;
+        }
+        
         .nav-links a {
             color: white;
             margin-left: 20px;
@@ -91,6 +133,62 @@ $organizationName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $row['org_name']); //
         
         .nav-links a:hover {
             transform: scale(1.2);
+        }
+
+        /* Profile icon styles */
+        .profile-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: white; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 70px;
+            position: relative;
+        }
+        
+        .profile-icon img {
+            width: 150%;
+            height: auto;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+        }
+        
+        .profile-icon img:hover {
+            transform: scale(1.2);
+        }
+        
+        /* Notification badge styles */
+        .navbar-notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #ff3b30;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            padding: 0;
+            line-height: 18px;
+            text-align: center;
+        }
+        
+        /* Mobile menu toggle button */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
         }
 
         .main-container {
@@ -292,16 +390,6 @@ $organizationName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $row['org_name']); //
             box-sizing: border-box;
         }
 
-        #background-video {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: -1;
-        }
-
         @media (max-width: 768px) {
             .upload-card {
                 width: 100%;
@@ -310,12 +398,77 @@ $organizationName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $row['org_name']); //
             }
             
             .navbar {
-                width: 95%;
-                padding: 10px 15px;
+                padding: 10px;
+                border-radius: 15px;
+                width: 90%; /* Smaller width on mobile */
+                max-width: 90%;
+                position: relative;
+                z-index: 2; /* Give navbar highest z-index */
+            }
+            
+            .mobile-menu-toggle {
+                display: block;
+                position: absolute;
+                right: 15px;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+            
+            .logo {
+                flex-direction: row;
+                align-items: center;
+                text-align: center;
+                max-width: 80%;
             }
             
             .logo img {
-                width: 60px;
+                width: 50px;
+                margin-right: 12px;
+            }
+            
+            .logo h2 {
+                margin: 0;
+                font-size: 22px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            
+            .nav-links {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                flex-direction: column;
+                background-color: #0099ff;
+                padding: 10px 0;
+                border-radius: 0 0 15px 15px;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+                display: none;
+                z-index: 9999; /* Same as navbar to ensure it stays on top */
+            }
+            
+            .nav-links.active {
+                display: flex;
+            }
+            
+            .nav-links a {
+                width: 100%;
+                text-align: center;
+                padding: 10px 0;
+                margin: 0;
+            }
+            
+            .profile-icon {
+                margin: 10px auto 0;
+            }
+            
+            /* Ensure notification badge is visible on mobile */
+            .nav-links .navbar-notification-badge {
+                position: absolute;
+                top: -5px;
+                right: -5px;
+                z-index: 1001;
             }
             
             .main-container {
@@ -326,18 +479,24 @@ $organizationName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $row['org_name']); //
     </style>
 </head>
 <body>
-<video autoplay muted loop id="background-video">
-    <source src="videos/bg6.mp4" type="video/mp4">
-</video>
-
 <header class="navbar">
     <div class="logo">
         <img src="images/mdx_logo.png" alt="Mangasay Data Exchange Logo">
         <h2>Upload Datasets</h2>
     </div>
-    <nav class="nav-links">
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    <nav class="nav-links" id="nav-links">
         <a href="HomeLogin.php">HOME</a>
-        <a href="datasets.php">DATASETS</a>
+        <a href="datasets.php">ALL DATASETS</a>
+        <a href="mydatasets.php">MY DATASETS</a>
+        <div class="profile-icon" id="navbar-profile-icon" style="position: relative;">
+            <img src="images/avatarIconunknown.jpg" alt="Profile">
+            <?php if ($total_count > 0): ?>
+                <span class="navbar-notification-badge" style="position: absolute; top: -5px; right: -5px;"><?php echo $total_count; ?></span>
+            <?php endif; ?>
+        </div>
     </nav>
 </header>
 
@@ -418,7 +577,33 @@ $organizationName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $row['org_name']); //
             fileList.appendChild(fileItem);
         }
     }
+    
+    // Mobile menu toggle and sidebar functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const navLinks = document.getElementById('nav-links');
+        
+        mobileMenuToggle.addEventListener('click', function() {
+            navLinks.classList.toggle('active');
+        });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const isClickInsideNavbar = event.target.closest('.navbar');
+            if (!isClickInsideNavbar && navLinks.classList.contains('active')) {
+                navLinks.classList.remove('active');
+            }
+        });
+        
+        // Profile icon click handler
+        document.getElementById('navbar-profile-icon').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.add('active');
+            document.querySelector('.sidebar-overlay').classList.add('active');
+        });
+    });
 </script>
+
+<?php include 'sidebar.php'; // Include the sidebar ?>
 
 </body>
 </html>

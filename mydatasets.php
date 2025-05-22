@@ -61,6 +61,7 @@ $sql = "
         c.name AS category_name,
         c.category_id,
         db.visibility,
+        db.created_at,
         (SELECT COUNT(*) FROM datasetratings r JOIN datasets d2 ON r.dataset_id = d2.dataset_id WHERE d2.dataset_batch_id = d.dataset_batch_id) AS upvotes,
         (SELECT COUNT(*) FROM datasetratings r JOIN datasets d2 ON r.dataset_id = d2.dataset_id WHERE d2.dataset_batch_id = d.dataset_batch_id AND r.user_id = ?) AS user_upvoted
     FROM datasets d
@@ -78,8 +79,6 @@ if (isset($_GET['visibility']) && in_array($_GET['visibility'], ['Public', 'Priv
     $visibility_filter = mysqli_real_escape_string($conn, $_GET['visibility']);
     $sql .= " AND db.visibility = '$visibility_filter'";
 }
-
-$sql .= " ORDER BY d.dataset_id DESC";
 
 $stmt = mysqli_prepare($conn, $sql);
 mysqli_stmt_bind_param($stmt, 'iii', $user_id, $user_id, $user_id);
@@ -100,7 +99,7 @@ include 'batch_analytics.php';
     <title>All Datasets</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="assets/css/datasets_styles.css">
-
+    <?php include 'includes/background_styles.php'; ?>
     <style>
         html, body {
             height: 100%;
@@ -121,40 +120,83 @@ include 'batch_analytics.php';
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 10px 5%; /* Adjusted padding for a more compact navbar */
+            padding: 10px 5%;
             padding-left: 30px;
-            background-color: #0099ff; /* Transparent background */
+            background-color: #0099ff;
             color: #cfd9ff;
             border-radius: 20px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             position: relative;
             margin: 10px 0;
             backdrop-filter: blur(10px);
-            max-width: 1200px; /* Limit the maximum width */
-            width: 100%; /* Ensure it takes up the full width but doesn't exceed 1200px */
-            margin-top:30px;
-            margin-left: auto; /* Center align the navbar */
-            margin-right: auto; /* Center align the navbar */
+            max-width: 1200px;
+            width: 100%;
+            margin-top: 30px;
+            margin-left: auto;
+            margin-right: auto;
             font-weight: bold;
+            z-index: 1000;
         }
+        
         .logo {
-        display: flex;
-        align-items: center;
+            display: flex;
+            align-items: center;
         }
+        
         .logo img {
             height: auto;
-            width: 80px; /* Adjust logo size */
+            width: 80px;
             max-width: 100%;
+            margin-right: 15px;
         }
+        
+        .logo h2 {
+            color: white;
+            margin: 0;
+            font-size: 22px;
+            white-space: nowrap;
+        }
+        
+        .nav-links {
+            display: flex;
+            align-items: center;
+        }
+        
         .nav-links a {
             color: white;
             margin-left: 20px;
             text-decoration: none;
             font-size: 18px;
-            transition: transform 0.3s ease; /* Smooth transition for scaling */
+            transition: transform 0.3s ease;
         }
+        
         .nav-links a:hover {
-            transform: scale(1.2); /* Scale up on hover */
+            transform: scale(1.2);
+        }
+        
+        /* Profile icon styles */
+        .profile-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: white; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 70px;
+            position: relative;
+        }
+        
+        .profile-icon img {
+            width: 150%;
+            height: auto;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+        }
+        
+        .profile-icon img:hover {
+            transform: scale(1.2); /* Slightly enlarge the image on hover */
         }
 
         h2 {
@@ -226,15 +268,6 @@ include 'batch_analytics.php';
 
         #category-btn:hover {
             background-color: #45a049; /* Darker green on hover */
-        }
-        #background-video {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: -1; /* stays behind everything */
         }
         .no-datasets {
             display: flex;
@@ -313,38 +346,8 @@ include 'batch_analytics.php';
         
         /* All dataset-related styles now come from datasets_styles.css */
 
-        .profile-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: white; 
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-left: 70px; /* Reduced margin */
-        }
-        .profile-icon img {
-            width: 150%;
-            height: auto;
-            border-radius: 50%;
-            object-fit: cover;
-            cursor: pointer;
-        }
-        .profile-icon img:hover {
-            transform: scale(1.2); /* Slightly enlarge the image on hover */
-        }
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        /* Updated notification badge styles for navbar */
-        .nav-links .profile-icon {
-            position: relative;
-        }
-        
-        .nav-links .notification-badge {
+        /* Notification badge styles to match dataset.php */
+        .navbar-notification-badge {
             position: absolute;
             top: -5px;
             right: -5px;
@@ -358,10 +361,10 @@ include 'batch_analytics.php';
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 5;
-            padding: 0;               /* Remove extra padding */
-            line-height: 18px;        /* Match height for vertical centering */
-            text-align: center;       /* Ensure text is centered */
+            z-index: 1001;
+            padding: 0;
+            line-height: 18px;
+            text-align: center;
         }
 
         /* Mobile menu toggle button */
@@ -372,6 +375,12 @@ include 'batch_analytics.php';
             color: white;
             font-size: 24px;
             cursor: pointer;
+            padding: 0;
+            z-index: 1001;
+        }
+        
+        .mobile-menu-toggle i {
+            display: block;
         }
 
         /* Responsive styles for the navbar */
@@ -379,10 +388,10 @@ include 'batch_analytics.php';
             .navbar {
                 padding: 10px;
                 border-radius: 15px;
-                width: 90%; /* Smaller width on mobile */
+                width: 90%;
                 max-width: 90%;
                 position: relative;
-                z-index: 2; /* Give navbar highest z-index */
+                z-index: 2;
             }
             
             .mobile-menu-toggle {
@@ -393,8 +402,24 @@ include 'batch_analytics.php';
                 transform: translateY(-50%);
             }
             
+            .logo {
+                flex-direction: row;
+                align-items: center;
+                text-align: center;
+                max-width: 80%;
+            }
+            
             .logo img {
                 width: 50px;
+                margin-right: 12px;
+            }
+            
+            .logo h2 {
+                margin: 0;
+                font-size: 22px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
             
             .nav-links {
@@ -408,7 +433,7 @@ include 'batch_analytics.php';
                 border-radius: 0 0 15px 15px;
                 box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
                 display: none;
-                z-index: 9999; /* Same as navbar to ensure it stays on top */
+                z-index: 9999;
             }
             
             .nav-links.active {
@@ -425,6 +450,14 @@ include 'batch_analytics.php';
             .profile-icon {
                 margin: 10px auto 0;
             }
+            
+            /* Ensure notification badge is visible on mobile */
+            .nav-links .navbar-notification-badge {
+                position: absolute;
+                top: -5px;
+                right: -5px;
+                z-index: 1001;
+            }
         }
 
         /* Add this to fix z-index issues */
@@ -439,16 +472,19 @@ include 'batch_analytics.php';
             }
             
             .logo img {
-                width: 50px;
+                width: 45px;
+                margin-right: 10px;
+            }
+            
+            .logo h2 {
+                font-size: 18px;
+                text-align: center;
             }
         }
 
     </style>
 </head>
 <body>
-<video autoplay muted loop id="background-video">
-        <source src="videos/bg6.mp4" type="video/mp4">
-    </video>
 
 <!-- Visibility filter sidebar -->
 <!-- This is now handled by the controls-wrapper -->
@@ -465,10 +501,11 @@ include 'batch_analytics.php';
         <nav class="nav-links" id="nav-links">
             <a href="HomeLogin.php">HOME</a>
             <a href="datasets.php">ALL DATASETS</a>
-            <div class="profile-icon" id="navbar-profile-icon">
+            <a href="mydatasets.php">MY DATASETS</a>
+            <div class="profile-icon" id="navbar-profile-icon" style="position: relative;">
                 <img src="images/avatarIconunknown.jpg" alt="Profile">
                 <?php if ($total_count > 0): ?>
-                    <span class="notification-badge"><?php echo $total_count; ?></span>
+                    <span class="navbar-notification-badge" style="position: absolute; top: -5px; right: -5px;"><?php echo $total_count; ?></span>
                 <?php endif; ?>
             </div>
         </nav>

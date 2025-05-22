@@ -1,3 +1,30 @@
+<?php
+session_start();
+// Get custom error message if available
+$error_message = isset($_SESSION['error_message']) ? $_SESSION['error_message'] : "You do not have the necessary permissions to access this page.";
+
+// Get error type if available
+$error_type = isset($_SESSION['error_type']) ? $_SESSION['error_type'] : "permission";
+
+// Determine appropriate action links based on error type
+$primary_link = "login.php";
+$primary_text = "Log In";
+$secondary_link = isset($_SESSION['user_id']) ? 'HomeLogin.php' : 'mindanaodataexchange.php';
+$secondary_text = "Back to Home";
+
+// Customize links based on error type
+if ($error_type === "organization") {
+    $primary_link = "organization.php";
+    $primary_text = "Join Organization";
+} elseif ($error_type === "validation") {
+    $primary_link = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : $secondary_link;
+    $primary_text = "Try Again";
+}
+
+// Clear the error message after displaying it
+unset($_SESSION['error_message']);
+unset($_SESSION['error_type']);
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,6 +32,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Unauthorized Access</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <?php include 'includes/background_styles.php'; ?>
     <style>
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -74,31 +102,19 @@
         .btn-outline:hover {
             background-color: #f0f7ff;
         }
-        #background-video {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: -1; /* stays behind everything */
-        }
     </style>
 </head>
 <body>
-<video autoplay muted loop id="background-video">
-        <source src="videos/bg6.mp4" type="video/mp4">
-    </video>
     <div class="container">
         <div class="icon">
             <i class="fas fa-exclamation-triangle"></i>
         </div>
         <h1>Unauthorized Access</h1>
-        <p>You do not have the necessary permissions to access this page.</p>
+        <p><?php echo htmlspecialchars($error_message); ?></p>
         <p>Please log in with the appropriate credentials or contact the administrator if you believe this is an error.</p>
         <div>
-            <a href="login.php" class="btn">Log In</a>
-            <a href="HomeLogin.php" class="btn btn-outline">Back to Home</a>
+            <a href="<?php echo $primary_link; ?>" class="btn"><?php echo $primary_text; ?></a>
+            <a href="<?php echo $secondary_link; ?>" class="btn btn-outline"><?php echo $secondary_text; ?></a>
         </div>
     </div>
 </body>

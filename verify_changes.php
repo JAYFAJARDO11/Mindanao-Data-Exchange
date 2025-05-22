@@ -12,6 +12,22 @@ if (!isset($_SESSION['user_id'])) {
     handle_error("You must be logged in to make changes to your account.", ERROR_AUTH, "login.php");
 }
 
+// Custom function to handle password change errors specifically
+function handle_password_change_error($message, $field = '', $redirect_url = 'user_settings.php') {
+    // Log the error
+    log_error($message, ERROR_VALIDATION, ['field' => $field]);
+    
+    // Set password-specific session variables
+    $_SESSION['password_change_error'] = $message;
+    $_SESSION['password_change_error_field'] = $field;
+    
+    // Redirect if URL is provided
+    if ($redirect_url) {
+        header("Location: $redirect_url");
+        exit();
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     try {
         $userId = $_SESSION['user_id'];
@@ -42,7 +58,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $user = $result->fetch_assoc();
     
             if (!password_verify($currentPassword, $user['password'])) {
-                handle_validation_error("Current password is incorrect.", "current_password", "user_settings.php");
+                if ($changeType == 'password') {
+                    handle_password_change_error("Current password is incorrect.", "current_password");
+                } else {
+                    handle_validation_error("Current password is incorrect.", "current_password", "user_settings.php");
+                }
             }
         }
     
@@ -71,8 +91,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
         // For password changes, validate password strength
         if ($changeType == 'password') {
+            // Check if confirm password was provided and if it matches new password
+            if (isset($_POST['confirm_password']) && $_POST['confirm_password'] !== $newValue) {
+                handle_password_change_error("New password and confirm password do not match.", "password_match");
+            }
+            
             if (!preg_match("/^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/", $newValue)) {
-                handle_validation_error("Password must be at least 8 characters long, contain 1 uppercase letter, 1 number, and 1 special character.", "password", "user_settings.php");
+                handle_password_change_error("Password must be at least 8 characters long, contain 1 uppercase letter, 1 number, and 1 special character.", "password_complexity");
             }
     
             // Check if new password is same as current password
@@ -89,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $user = $result->fetch_assoc();
             
             if (password_verify($newValue, $user['password'])) {
-                handle_validation_error("New password cannot be the same as your current password.", "password", "user_settings.php");
+                handle_password_change_error("New password cannot be the same as your current password.", "password_reuse");
             }
         }
     
@@ -158,19 +183,32 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header("Location: verify_changes_code.php");
             exit();
         } catch (Exception $e) {
-            log_error("Failed to send verification email", ERROR_GENERAL, [
-                'error' => $mail->ErrorInfo,
-                'email' => $email,
-                'type' => $changeType
-            ]);
-            handle_error("Failed to send verification email. Please try again.", ERROR_GENERAL, "user_settings.php");
+            if ($changeType == 'password') {
+                log_error("Failed to send verification email", ERROR_GENERAL, [
+                    'error' => $mail->ErrorInfo,
+                    'email' => $email,
+                    'type' => $changeType
+                ]);
+                handle_password_change_error("Failed to send verification email. Please try again.", "email_sending");
+            } else {
+                log_error("Failed to send verification email", ERROR_GENERAL, [
+                    'error' => $mail->ErrorInfo,
+                    'email' => $email,
+                    'type' => $changeType
+                ]);
+                handle_error("Failed to send verification email. Please try again.", ERROR_GENERAL, "user_settings.php");
+            }
         }
     } catch (Exception $e) {
         log_error("Error processing change request", ERROR_GENERAL, [
             'exception' => $e->getMessage(),
             'trace' => $e->getTraceAsString()
         ]);
-        handle_error("An unexpected error occurred. Please try again.", ERROR_GENERAL, "user_settings.php");
+        if ($changeType == 'password') {
+            handle_password_change_error("An unexpected error occurred. Please try again.", "general");
+        } else {
+            handle_error("An unexpected error occurred. Please try again.", ERROR_GENERAL, "user_settings.php");
+        }
     }
 }
 ?> 

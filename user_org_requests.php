@@ -12,6 +12,32 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
+// Initialize the total_count variable
+$total_count = 0;
+
+// Get count of pending access requests for this user
+$request_count = 0;
+$requestCountSql = "SELECT COUNT(*) as count FROM dataset_access_requests 
+                    WHERE owner_id = $user_id AND status = 'Pending'";
+$requestCountResult = mysqli_query($conn, $requestCountSql);
+if ($requestCountResult) {
+    $row = mysqli_fetch_assoc($requestCountResult);
+    $request_count = $row['count'];
+}
+
+// Get count of unread notifications for this user
+$notif_count = 0;
+$notifCountSql = "SELECT COUNT(*) as count FROM user_notifications 
+                  WHERE user_id = $user_id AND is_read = FALSE";
+$notifCountResult = mysqli_query($conn, $notifCountSql);
+if ($notifCountResult) {
+    $row = mysqli_fetch_assoc($notifCountResult);
+    $notif_count = $row['count'];
+}
+
+// Total count for badge display (requests + notifications)
+$total_count = $request_count + $notif_count;
+
 // Cancel request if action is cancel and request_id is provided
 if (isset($_GET['action']) && $_GET['action'] === 'cancel' && isset($_GET['request_id'])) {
     $request_id = (int)$_GET['request_id'];
@@ -167,6 +193,7 @@ $requests_result = $requests_stmt->get_result();
     <title>My Organization Requests</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="assets/css/error_styles.css">
+    <?php include 'includes/background_styles.php'; ?>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -254,10 +281,10 @@ $requests_result = $requests_stmt->get_result();
             .navbar {
                 padding: 10px;
                 border-radius: 15px;
-                width: 90%;
+                width: 90%; /* Smaller width on mobile */
                 max-width: 90%;
                 position: relative;
-                z-index: 2;
+                z-index: 2; /* Give navbar highest z-index */
             }
             
             .mobile-menu-toggle {
@@ -299,7 +326,7 @@ $requests_result = $requests_stmt->get_result();
                 border-radius: 0 0 15px 15px;
                 box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
                 display: none;
-                z-index: 9999;
+                z-index: 9999; /* Same as navbar to ensure it stays on top */
             }
             
             .nav-links.active {
@@ -311,6 +338,18 @@ $requests_result = $requests_stmt->get_result();
                 text-align: center;
                 padding: 10px 0;
                 margin: 0;
+            }
+            
+            .profile-icon {
+                margin: 10px auto 0;
+            }
+            
+            /* Ensure notification badge is visible on mobile */
+            .nav-links .navbar-notification-badge {
+                position: absolute;
+                top: -5px;
+                right: -5px;
+                z-index: 1001;
             }
         }
 
@@ -545,21 +584,52 @@ $requests_result = $requests_stmt->get_result();
             margin-bottom: 20px;
         }
         
-        #background-video {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+        /* Profile icon styles */
+        .profile-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: white; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 70px;
+            position: relative;
+        }
+        .profile-icon img {
+            width: 150%;
+            height: auto;
+            border-radius: 50%;
             object-fit: cover;
-            z-index: -1;
+            cursor: pointer;
+        }
+        .profile-icon img:hover {
+            transform: scale(1.2); /* Slightly enlarge the image on hover */
+        }
+        
+        /* Notification badge styles */
+        .navbar-notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #ff3b30;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            padding: 0;
+            line-height: 18px;
+            text-align: center;
         }
     </style>
 </head>
 <body>
-    <video autoplay muted loop id="background-video">
-        <source src="videos/bg6.mp4" type="video/mp4">
-    </video>
     
     <header class="navbar">
         <div class="logo">
@@ -573,7 +643,12 @@ $requests_result = $requests_stmt->get_result();
             <a href="HomeLogin.php">HOME</a>
             <a href="datasets.php">ALL DATASETS</a>
             <a href="mydatasets.php">MY DATASETS</a>
-            <a href="user_settings.php">SETTINGS</a>
+            <div class="profile-icon" id="navbar-profile-icon" style="position: relative;">
+                <img src="images/avatarIconunknown.jpg" alt="Profile">
+                <?php if ($total_count > 0): ?>
+                    <span class="navbar-notification-badge" style="position: absolute; top: -5px; right: -5px;"><?php echo $total_count; ?></span>
+                <?php endif; ?>
+            </div>
         </nav>
     </header>
     
@@ -582,6 +657,18 @@ $requests_result = $requests_stmt->get_result();
         
         <?php echo display_error_message(); ?>
         <?php echo display_success_message(); ?>
+        
+        <?php
+        // Debug: Print error message if it exists
+        if(isset($_SESSION['org_request_error'])) {
+            echo '<div class="alert alert-danger">';
+            echo htmlspecialchars($_SESSION['org_request_error']);
+            echo '</div>';
+            
+            // Immediately unset to prevent it from showing again
+            unset($_SESSION['org_request_error']);
+        }
+        ?>
         
         <?php
         // Check if user can make a new request
@@ -608,9 +695,16 @@ $requests_result = $requests_stmt->get_result();
         if ($check_org_result->num_rows > 0) {
             $can_make_request = false;
             
+            // Don't set error message here - it should only be set when redirected from check_organization.php
+            // This prevents the error message from appearing on every page load
+            /*
             if ($check_pending_result->num_rows === 0) {
-                echo '<div class="alert alert-danger">You are already a member of an organization. You must leave your current organization before creating a new one.</div>';
+                // Set an org-request specific error message instead of using general error handler
+                $_SESSION['org_request_error'] = "You are already a member of an organization. You must leave your current organization before creating a new one.";
+                // Don't use general error handler to avoid affecting other pages
+                // handle_error("You are already a member of an organization. You must leave your current organization before creating a new one.", ERROR_PERMISSION);
             }
+            */
         }
         
         if ($can_make_request):
@@ -727,6 +821,8 @@ $requests_result = $requests_stmt->get_result();
         </div>
     </div>
     
+    <?php include 'sidebar.php'; // Include the sidebar ?>
+    
     <script>
         let pendingRequestUrl = '';
         
@@ -763,6 +859,12 @@ $requests_result = $requests_stmt->get_result();
                 if (!isClickInsideNavbar && navLinks.classList.contains('active')) {
                     navLinks.classList.remove('active');
                 }
+            });
+            
+            // Profile icon click handler
+            document.getElementById('navbar-profile-icon').addEventListener('click', function() {
+                document.querySelector('.sidebar').classList.add('active');
+                document.querySelector('.sidebar-overlay').classList.add('active');
             });
         });
     </script>

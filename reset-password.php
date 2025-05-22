@@ -81,6 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta charset="UTF-8">
     <title>Reset Password</title>
     <link rel="stylesheet" href="assets/css/error_styles.css">
+    <?php include 'includes/background_styles.php'; ?>
     <style>
             html, body {
         height: auto;
@@ -134,15 +135,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         transform: scale(1.2); /* Scale up the link by 20% */
     }
 
-    #background-video {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        z-index: -1; /* stays behind everything */
-    }
     .nav-links {
         display: flex;
         align-items: center;
@@ -210,9 +202,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </style>
 </head>
 <body>
-<video autoplay muted loop id="background-video">
-                <source src="videos/bg6.mp4" type="video/mp4">
-    </video>
 
     <header class="navbar">
         <div class="logo">

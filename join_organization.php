@@ -16,7 +16,23 @@ $check_user_stmt->bind_param("i", $user_id);
 $check_user_stmt->execute();
 $user_result = $check_user_stmt->get_result();
 $user_data = $user_result->fetch_assoc();
-$has_organization = !empty($user_data['organization_id']);
+
+// Explicitly check organization_id from the database, not from session
+$has_organization = false;
+if ($user_data && !empty($user_data['organization_id'])) {
+    $has_organization = true;
+    // Update session with current organization ID
+    $_SESSION['organization_id'] = $user_data['organization_id'];
+} else {
+    // Clear organization data from session if user doesn't have one
+    $_SESSION['organization_id'] = null;
+    // Clean up any error messages related to organizations
+    if (isset($_SESSION['error_message']) && strpos($_SESSION['error_message'], 'organization') !== false) {
+        unset($_SESSION['error_message']);
+    }
+}
+
+// Don't redirect users with organizations - we'll show them a custom message instead
 
 // Check if user already has a pending request
 $check_pending_sql = "SELECT omr.*, o.name as organization_name 
@@ -50,6 +66,7 @@ if (!$has_organization && !$has_pending_request) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Join an Organization</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <?php include 'includes/background_styles.php'; ?>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -204,15 +221,6 @@ if (!$has_organization && !$has_pending_request) {
             margin-right: 15px;
             font-size: 16px;
             padding-right:91px;
-        }
-        #background-video {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: -1;
         }
         h2 {
             margin-bottom: 25px;
@@ -407,10 +415,6 @@ if (!$has_organization && !$has_pending_request) {
     </style>
 </head>
 <body>
-    <video autoplay muted loop id="background-video">
-        <source src="videos/bg6.mp4" type="video/mp4">
-    </video>
-
     <header class="navbar">
         <div class="logo">
             <img src="images/mdx_logo.png" alt="Mangasay Data Exchange Logo">
@@ -443,9 +447,11 @@ if (!$has_organization && !$has_pending_request) {
         <?php endif; ?>
         
         <?php if($has_organization): ?>
-            <div class="alert alert-info">
-                <p>You are already a member of an organization. You must leave your current organization before joining another one.</p>
-                <p><a href="user_settings.php" class="btn">Back to User Settings</a></p>
+            <div style="background-color: #e0f0ff; color: #004085; border: 2px solid #80bdff; padding: 20px; border-radius: 8px; margin-bottom: 25px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center;">
+                <i class="fas fa-info-circle" style="font-size: 24px; color: #0099ff; margin-bottom: 10px;"></i>
+                <h3 style="margin-top: 10px; color: #0066cc; font-size: 20px;">Organization Membership Notice</h3>
+                <p style="margin: 10px 0; font-size: 16px;">You are already a member of an organization. You must leave your current organization before joining another one.</p>
+                <a href="user_settings.php" style="display: inline-block; margin-top: 15px; background-color: #0099ff; color: white; text-decoration: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; transition: background-color 0.3s;">Back to User Settings</a>
             </div>
         <?php elseif($has_pending_request): ?>
             <div class="alert alert-info">

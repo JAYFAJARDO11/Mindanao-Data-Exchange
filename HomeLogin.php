@@ -64,55 +64,237 @@ $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organizati
     <title>MDX</title>
     <link rel="stylesheet" href="assets/css/homelogin.css">
     <script src="https://kit.fontawesome.com/2c68a433da.js" crossorigin="anonymous"></script>
+    <?php include 'includes/background_styles.php'; ?>
     <style>
-    /* Additional styles that are not in the external CSS file */
-    .search-dropdown {
-        position: absolute;
-        top: 45px;
-        left: 0;
-        width: 100%;
-        max-width: 300px;
-        background: white;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        display: none;
-        z-index: 10;
+    /* New navbar that avoids conflicts with homelogin.css */
+    .mdx-navbar-new {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 10px 5% !important;
+        padding-left: 30px !important;
+        background-color: #0099ff !important;
+        color: #cfd9ff !important;
+        border-radius: 20px !important;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2) !important;
+        position: relative !important;
+        margin: 10px 0 !important;
+        margin-top: 30px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        max-width: 1200px !important;
+        width: 100% !important;
+        font-weight: bold !important;
+        z-index: 1000 !important;
     }
-    .search-dropdown ul li, .trending-title {
-        padding: 10px;
-        cursor: pointer;
-        transition: background 0.3s;
-        color: black;
+    
+    .mdx-logo {
+        display: flex !important;
+        align-items: center !important;
+        flex: 0 0 auto !important;
     }
-    .search-dropdown .trending-title {
-        font-weight: bold;
-        padding: 8px 10px;
-        border-bottom: 1px solid #ccc;
-        text-align: left;
+    
+    .mdx-logo img {
+        height: auto !important;
+        width: 80px !important;
+        max-width: 100% !important;
+        margin-right: 15px !important;
     }
-    .search-dropdown ul {
-        list-style: none;
-        margin: 0;
-        padding: 0;
+    
+    .mdx-search-container {
+        position: relative !important;
+        display: flex !important;
+        align-items: center !important;
+        flex: 1 !important;
+        justify-content: center !important;
+        max-width: 500px !important;
+        width: 100% !important;
+        margin: 0 20px !important;
     }
-    .search-dropdown ul li {
-        padding: 10px;
-        cursor: pointer;
-        transition: background 0.3s;
-        text-align: left;
+    
+    .mdx-search-bar {
+        display: flex !important;
+        align-items: center !important;
+        background: white !important;
+        border-radius: 5px !important;
+        padding: 8px 10px !important;
+        width: 100% !important;
     }
-    .search-dropdown ul li:hover {
-        background: #cfd9ff;
+    
+    .mdx-search-bar input {
+        border: none !important;
+        outline: none !important;
+        background: transparent !important;
+        width: 100% !important;
+        padding: 5px !important;
     }
-    .nav-links a {
-        color: white;
-        text-decoration: none;
-        transition: transform 0.3s ease;
+    
+    .mdx-search-bar button {
+        background: none !important;
+        border: none !important;
+        cursor: pointer !important;
+        padding: 5px !important;
     }
-    .nav-links a:hover {
-        transform: scale(1.2);
+    
+    .mdx-search-bar img {
+        width: 20px !important;
+        height: 20px !important;
     }
+    
+    .mdx-toggle-wrapper {
+        display: flex !important;
+        align-items: center !important;
+        flex: 0 0 auto !important;
+    }
+    
+    .mdx-menu-toggle {
+        display: none !important;
+        background: none !important;
+        border: none !important;
+        color: white !important;
+        font-size: 24px !important;
+        cursor: pointer !important;
+        padding: 0 !important;
+        margin-right: 15px !important;
+        z-index: 1001 !important;
+    }
+    
+    .mdx-nav-links {
+        display: flex !important;
+        align-items: center !important;
+    }
+    
+    .mdx-nav-links a {
+        color: white !important;
+        margin-left: 20px !important;
+        text-decoration: none !important;
+        font-size: 18px !important;
+        font-weight: bold !important;
+        transition: transform 0.3s ease !important;
+    }
+    
+    .mdx-nav-links a:hover {
+        transform: scale(1.2) !important;
+    }
+    
+    .mdx-profile-icon {
+        width: 40px !important;
+        height: 40px !important;
+        border-radius: 50% !important;
+        background-color: white !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin-left: 70px !important;
+        position: relative !important;
+        cursor: pointer !important;
+    }
+    
+    .mdx-profile-icon img {
+        width: 150% !important;
+        height: auto !important;
+        border-radius: 50% !important;
+        object-fit: cover !important;
+    }
+    
+    .mdx-profile-icon img:hover {
+        transform: scale(1.2) !important;
+    }
+    
+    .mdx-notification-badge {
+        position: absolute !important;
+        top: -5px !important;
+        right: -5px !important;
+        background-color: #ff3b30 !important;
+        color: white !important;
+        border-radius: 50% !important;
+        width: 18px !important;
+        height: 18px !important;
+        font-size: 12px !important;
+        font-weight: bold !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        z-index: 1001 !important;
+        padding: 0 !important;
+        line-height: 18px !important;
+        text-align: center !important;
+    }
+    
+    /* Responsive styles for the navbar */
+    @media screen and (max-width: 768px) {
+        .mdx-navbar-new {
+            padding: 10px !important;
+            border-radius: 15px !important;
+            width: 90% !important;
+            max-width: 90% !important;
+        }
+        
+        .mdx-menu-toggle {
+            display: block !important;
+            position: absolute !important;
+            right: 15px !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+            z-index: 1002 !important;
+        }
+        
+        .mdx-logo img {
+            width: 50px !important;
+            margin-right: 12px !important;
+        }
+        
+        .mdx-search-container {
+            max-width: 65% !important;
+            margin-left: 15px !important;
+            margin-right: auto !important;
+        }
+        
+        .mdx-nav-links {
+            position: absolute !important;
+            top: 100% !important;
+            left: 0 !important;
+            right: 0 !important;
+            flex-direction: column !important;
+            background-color: #0099ff !important;
+            padding: 10px 0 !important;
+            border-radius: 0 0 15px 15px !important;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2) !important;
+            display: none !important;
+            z-index: 9999 !important;
+        }
+        
+        .mdx-nav-links.active {
+            display: flex !important;
+        }
+        
+        .mdx-nav-links a {
+            width: 100% !important;
+            text-align: center !important;
+            padding: 10px 0 !important;
+            margin: 10px 0 !important;
+        }
+        
+        .mdx-profile-icon {
+            margin: 15px auto !important;
+        }
+    }
+
+    @media screen and (max-width: 480px) {
+        .mdx-navbar-new {
+            padding: 8px 10px !important;
+        }
+        
+        .mdx-logo img {
+            width: 40px !important;
+        }
+        
+        .mdx-search-container {
+            max-width: 60% !important;
+        }
+    }
+    
+    /* Other non-navbar styles */
     h1 {
         font-weight: 600;
         margin-bottom: 20px;
@@ -142,23 +324,6 @@ $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organizati
     }
     .divider {
         background-color: black;
-    }
-    .profile-icon img {
-        width: 150%;
-        height: auto;
-        border-radius: 50%;
-        object-fit: cover;
-        cursor: pointer;
-    }
-    .profile-icon img:hover {
-        transform: scale(1.2);
-    }
-    .profile-icon {
-        border-radius: 50%;
-        background-color: white; 
-        display: flex;
-        align-items: center;
-        justify-content: center;
     }
     .tooltip-text {
         position: absolute;
@@ -193,29 +358,6 @@ $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organizati
         opacity: 0.5;
     }
     
-    /* Updated notification badge styles for navbar */
-    .nav-links .profile-icon {
-        position: relative;
-    }
-    .nav-links .notification-badge {
-        position: absolute;
-        top: -5px;
-        right: -5px;
-        background-color: #ff3b30;
-        color: white;
-        border-radius: 50%;
-        width: 18px;
-        height: 18px;
-        font-size: 12px;
-        font-weight: bold;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 5;
-        padding: 0;
-        line-height: 18px;
-        text-align: center;
-    }
     .upload-section {
         position: fixed;
         bottom: 20px;
@@ -227,70 +369,99 @@ $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organizati
         display: inline-block;
         padding: 20px;
         background-color: rgba(0, 153, 255, 0.8);
-        border-radius: 8px; /* Rounded corners */
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         transition: all 0.3s ease;
     }
 
     .upload-btn i {
-        font-size: 40px; /* Larger icon size */
-        color: #ffffff; /* White color for the icon */
+        font-size: 40px;
+        color: #ffffff;
     }
 
     .upload-btn:hover {
-        background-color: #a0b6f3; /* Darker blue when hovered */
-        transform: scale(1.1); /* Slightly increase size on hover */
+        background-color: #a0b6f3;
+        transform: scale(1.1);
     }
     
-    .upload-wrapper {
-        position: relative;
-        display: inline-block;
+    .search-dropdown {
+        position: absolute !important;
+        top: 45px !important;
+        left: 0 !important;
+        width: 100% !important;
+        max-width: 500px !important;
+        background: white !important;
+        border: 1px solid #ccc !important;
+        border-radius: 5px !important;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+        display: none !important;
+        z-index: 1002 !important;
     }
-    
-    .upload-wrapper.has-tooltip:hover .tooltip-text {
-        opacity: 1;
-        visibility: visible;
+    .search-dropdown ul li, .trending-title {
+        padding: 10px !important;
+        cursor: pointer !important;
+        transition: background 0.3s !important;
+        color: black !important;
     }
-    
-    .upload-btn.disabled {
-        pointer-events: none;
-        opacity: 0.5;
+    .search-dropdown .trending-title {
+        font-weight: bold !important;
+        padding: 8px 10px !important;
+        border-bottom: 1px solid #ccc !important;
+        text-align: left !important;
+    }
+    .search-dropdown ul {
+        list-style: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    .search-dropdown ul li {
+        padding: 10px !important;
+        cursor: pointer !important;
+        transition: background 0.3s !important;
+        text-align: left !important;
+    }
+    .search-dropdown ul li:hover {
+        background: #cfd9ff !important;
     }
     </style>
 </head>
 <body>
-    <video autoplay muted loop id="background-video">
-        <source src="videos/bg6.mp4" type="video/mp4">
-    </video>
-
     <div id="wrapper">
-        <header class="navbar">
-            <div class="logo">
+        <header class="mdx-navbar-new">
+            <div class="mdx-logo">
                 <img src="images/mdx_logo.png" alt="Mangasay Data Exchange Logo">
             </div>
-            <form id="searchForm" action="search_results.php" method="GET" class="search-bar">
-                <input type="text" name="search" placeholder="Search datasets" onfocus="showDropdown()" onblur="hideDropdown()">
-                <button type="submit" aria-label="Search">
-                    <img src="images/search_icon.png" alt="Search">
-                </button>
-                <div id="searchDropdown" class="search-dropdown">
-                    <div class="trending-title">Trending Searches</div>
-                    <ul id="trendingSearches">
-                        <!-- Trending searches will be loaded here -->
-                    </ul>
-                </div>
-            </form>
-            <nav class="nav-links">
+            
+            <div class="mdx-search-container">
+                <form id="searchForm" action="search_results.php" method="GET" class="mdx-search-bar">
+                    <input type="text" name="search" placeholder="Search datasets" onfocus="showDropdown()" onblur="hideDropdown()">
+                    <button type="submit" aria-label="Search">
+                        <img src="images/search_icon.png" alt="Search">
+                    </button>
+                    <div id="searchDropdown" class="search-dropdown">
+                        <div class="trending-title">Trending Searches</div>
+                        <ul id="trendingSearches">
+                            <!-- Trending searches will be loaded here -->
+                        </ul>
+                    </div>
+                </form>
+            </div>
+            
+            <button class="mdx-menu-toggle" id="mobile-menu-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <div class="mdx-nav-links" id="nav-links">
                 <a href="HomeLogin.php">HOME</a>
                 <a href="datasets.php">DATASETS</a>
                 <a onclick="showModal()" style="cursor: pointer;">CATEGORY</a>
-                <div class="profile-icon" id="navbar-profile-icon">
+                <div class="mdx-profile-icon" id="navbar-profile-icon">
                     <img src="images/avatarIconunknown.jpg" alt="Profile">
                     <?php if ($total_count > 0): ?>
-                        <span class="notification-badge"><?php echo $total_count; ?></span>
+                        <span class="mdx-notification-badge"><?php echo $total_count; ?></span>
                     <?php endif; ?>
                 </div>
-            </nav>
+            </div>
         </header>
     
         <script>
@@ -321,11 +492,37 @@ $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organizati
             document.addEventListener("DOMContentLoaded", function() {
                 document.getElementById("categoryModal").style.display = "none";
                 
-                // Update the click event to use the specific ID
-                document.getElementById('navbar-profile-icon').addEventListener('click', function() {
-                    document.querySelector('.sidebar').classList.add('active');
-                    document.querySelector('.sidebar-overlay').classList.add('active');
+                // Mobile menu toggle
+                const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+                const navLinks = document.getElementById('nav-links');
+                
+                if (mobileMenuToggle && navLinks) {
+                    mobileMenuToggle.addEventListener('click', function(e) {
+                        e.stopPropagation(); // Prevent event from bubbling up
+                        navLinks.classList.toggle('active');
+                    });
+                }
+                
+                // Close menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    const isClickInsideNavbar = event.target.closest('.mdx-navbar-new');
+                    if (!isClickInsideNavbar && navLinks && navLinks.classList.contains('active')) {
+                        navLinks.classList.remove('active');
+                    }
                 });
+                
+                // Profile icon click handler
+                const profileIcon = document.getElementById('navbar-profile-icon');
+                if (profileIcon) {
+                    profileIcon.addEventListener('click', function() {
+                        const sidebar = document.querySelector('.sidebar');
+                        const sidebarOverlay = document.querySelector('.sidebar-overlay');
+                        if (sidebar && sidebarOverlay) {
+                            sidebar.classList.add('active');
+                            sidebarOverlay.classList.add('active');
+                        }
+                    });
+                }
             });
         </script>
         
@@ -407,12 +604,11 @@ $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organizati
                     </a>
                 </div>
                 
-                <!-- Important links as horizontal layout -->
                 <div class="footer-links">
-                    <a href="about.php" class="footer-link">About Us</a>
-                    <a href="privacy.php" class="footer-link">Privacy Policy</a>
-                    <a href="terms.php" class="footer-link">Terms of Service</a>
-                    <a href="contact.php" class="footer-link">Contact</a>
+                    <a href="aboutus.php" class="footer-link">About Us</a>
+                    <a href="privacypolicy.php" class="footer-link">Privacy Policy</a>
+                    <a href="termsofservices.php" class="footer-link">Terms of Service</a>
+                    <a href="mailto:mindanaodataexchange@gmail.com?subject=Inquiry&body=Hello,%0D%0A%0D%0AI would like to inquire about..." class="footer-link">Contact Us</a>
                 </div>
             </div>
         </div>

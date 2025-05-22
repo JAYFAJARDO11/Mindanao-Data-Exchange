@@ -2,6 +2,9 @@
 session_start();
 include('db_connection.php');
 
+// Include session update to ensure organization_id is synchronized
+include 'update_session.php';
+
 // Check if the user is logged in (ensure 'user_id' is set in the session)
 if (!isset($_SESSION['user_id'])) {
     // Redirect to login page if not authenticated
@@ -10,6 +13,32 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $user_id = $_SESSION['user_id'] ?? null;
+
+// Initialize the total_count variable
+$total_count = 0;
+
+// Get count of pending access requests for this user
+$request_count = 0;
+$requestCountSql = "SELECT COUNT(*) as count FROM dataset_access_requests 
+                    WHERE owner_id = $user_id AND status = 'Pending'";
+$requestCountResult = mysqli_query($conn, $requestCountSql);
+if ($requestCountResult) {
+    $row = mysqli_fetch_assoc($requestCountResult);
+    $request_count = $row['count'];
+}
+
+// Get count of unread notifications for this user
+$notif_count = 0;
+$notifCountSql = "SELECT COUNT(*) as count FROM user_notifications 
+                  WHERE user_id = $user_id AND is_read = FALSE";
+$notifCountResult = mysqli_query($conn, $notifCountSql);
+if ($notifCountResult) {
+    $row = mysqli_fetch_assoc($notifCountResult);
+    $notif_count = $row['count'];
+}
+
+// Total count for badge display (requests + notifications)
+$total_count = $request_count + $notif_count;
 
 function formatUrl($url) {
     if (empty($url)) {
@@ -427,6 +456,7 @@ $analytics = get_batch_analytics($conn, $batch_id);
 
   <title><?php echo !empty($dataset['title']) ? htmlspecialchars($dataset['title']) : 'Untitled Dataset'; ?></title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <?php include 'includes/background_styles.php'; ?>
   <style>
      body {
       margin: 0;
@@ -567,6 +597,52 @@ $analytics = get_batch_analytics($conn, $batch_id);
         transform: scale(1.2);
     }
     
+    /* Profile icon styles */
+    .profile-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: white; 
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 70px;
+        position: relative;
+    }
+    
+    .profile-icon img {
+        width: 150%;
+        height: auto;
+        border-radius: 50%;
+        object-fit: cover;
+        cursor: pointer;
+    }
+    
+    .profile-icon img:hover {
+        transform: scale(1.2); /* Slightly enlarge the image on hover */
+    }
+    
+    /* Notification badge styles */
+    .navbar-notification-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background-color: #ff3b30;
+        color: white;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        font-size: 12px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1001;
+        padding: 0;
+        line-height: 18px;
+        text-align: center;
+    }
+    
     /* Mobile menu toggle button */
     .mobile-menu-toggle {
         display: none;
@@ -645,6 +721,18 @@ $analytics = get_batch_analytics($conn, $batch_id);
             text-align: center;
             padding: 10px 0;
             margin: 0;
+        }
+        
+        .profile-icon {
+            margin: 10px auto 0;
+        }
+        
+        /* Ensure notification badge is visible on mobile */
+        .nav-links .navbar-notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            z-index: 1001;
         }
         
         .container {
@@ -1016,17 +1104,7 @@ $analytics = get_batch_analytics($conn, $batch_id);
       color: #842029;
       border: 1px solid #f5c2c7;
     }
-    
-    #background-video {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      z-index: -1; /* stays behind everything */
-    }
-    
+  
     /* Add missing styles */
     .visibility-badge {
         display: inline-block;
@@ -1441,6 +1519,7 @@ $analytics = get_batch_analytics($conn, $batch_id);
       font-weight: bold;
       display: flex;
       align-items: center;
+      z-index: 2000;
     }
     
     .notification.comment {
@@ -1946,9 +2025,6 @@ $analytics = get_batch_analytics($conn, $batch_id);
   </style>
 </head>
 <body>
-<video autoplay muted loop id="background-video">
-        <source src="videos/bg6.mp4" type="video/mp4">
-    </video>
   
 <?php if (isset($_SESSION['request_message'])): ?>
 <div class="notification request" id="requestMessage">
@@ -2016,6 +2092,37 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 300);
         }, 3000);
     }
+    
+    // Mobile menu toggle functionality
+    const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+    const navLinks = document.getElementById('nav-links');
+    
+    if (mobileMenuToggle && navLinks) {
+        mobileMenuToggle.addEventListener('click', function() {
+            navLinks.classList.toggle('active');
+        });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const isClickInsideNavbar = event.target.closest('.navbar');
+            if (!isClickInsideNavbar && navLinks.classList.contains('active')) {
+                navLinks.classList.remove('active');
+            }
+        });
+    }
+    
+    // Profile icon click handler
+    const profileIcon = document.getElementById('navbar-profile-icon');
+    if (profileIcon) {
+        profileIcon.addEventListener('click', function() {
+            const sidebar = document.querySelector('.sidebar');
+            const sidebarOverlay = document.querySelector('.sidebar-overlay');
+            if (sidebar && sidebarOverlay) {
+                sidebar.classList.add('active');
+                sidebarOverlay.classList.add('active');
+            }
+        });
+    }
 });
 </script>
 
@@ -2029,6 +2136,14 @@ document.addEventListener('DOMContentLoaded', function() {
         </button>
         <nav class="nav-links" id="nav-links">
             <a href="HomeLogin.php">HOME</a>
+            <a href="datasets.php">ALL DATASETS</a>
+            <a href="mydatasets.php">MY DATASETS</a>
+            <div class="profile-icon" id="navbar-profile-icon" style="position: relative;">
+                <img src="images/avatarIconunknown.jpg" alt="Profile">
+                <?php if ($total_count > 0): ?>
+                    <span class="navbar-notification-badge" style="position: absolute; top: -5px; right: -5px;"><?php echo $total_count; ?></span>
+                <?php endif; ?>
+            </div>
         </nav>
     </header>
 
@@ -2533,6 +2648,7 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
   </div>
 
+  <?php include 'sidebar.php'; // Include the sidebar ?>
 </body>
 </html>
 

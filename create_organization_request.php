@@ -11,6 +11,32 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
+// Initialize the total_count variable
+$total_count = 0;
+
+// Get count of pending access requests for this user
+$request_count = 0;
+$requestCountSql = "SELECT COUNT(*) as count FROM dataset_access_requests 
+                    WHERE owner_id = $user_id AND status = 'Pending'";
+$requestCountResult = mysqli_query($conn, $requestCountSql);
+if ($requestCountResult) {
+    $row = mysqli_fetch_assoc($requestCountResult);
+    $request_count = $row['count'];
+}
+
+// Get count of unread notifications for this user
+$notif_count = 0;
+$notifCountSql = "SELECT COUNT(*) as count FROM user_notifications 
+                  WHERE user_id = $user_id AND is_read = FALSE";
+$notifCountResult = mysqli_query($conn, $notifCountSql);
+if ($notifCountResult) {
+    $row = mysqli_fetch_assoc($notifCountResult);
+    $notif_count = $row['count'];
+}
+
+// Total count for badge display (requests + notifications)
+$total_count = $request_count + $notif_count;
+
 // Check if user already has a pending organization request
 $check_pending_sql = "SELECT * FROM organization_creation_requests WHERE user_id = ? AND status = 'Pending'";
 $check_pending_stmt = $conn->prepare($check_pending_sql);
@@ -192,6 +218,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Organization Request</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <?php include 'includes/background_styles.php'; ?>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -204,10 +231,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 15px 5%;
+            padding: 10px 5%;
             padding-left: 30px;
             background-color: #0099ff;
-            color: #ffffff;
+            color: #cfd9ff;
             border-radius: 20px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             position: relative;
@@ -220,7 +247,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin-right: auto;
             font-weight: bold;
             z-index: 1000;
-            min-height: 60px;
         }
         
         .logo {
@@ -253,11 +279,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             text-decoration: none;
             font-size: 18px;
             transition: transform 0.3s ease;
-            font-weight: bold;
         }
         
         .nav-links a:hover {
             transform: scale(1.2);
+        }
+        
+        /* Profile icon styles */
+        .profile-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: white; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 70px;
+            position: relative;
+        }
+        
+        .profile-icon img {
+            width: 150%;
+            height: auto;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+        }
+        
+        .profile-icon img:hover {
+            transform: scale(1.2); /* Slightly enlarge the image on hover */
+        }
+        
+        /* Notification badge styles */
+        .navbar-notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #ff3b30;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            padding: 0;
+            line-height: 18px;
+            text-align: center;
         }
         
         /* Mobile menu toggle button */
@@ -337,6 +408,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 text-align: center;
                 padding: 10px 0;
                 margin: 0;
+            }
+            
+            /* Ensure notification badge is visible on mobile */
+            .nav-links .navbar-notification-badge {
+                position: absolute;
+                top: -5px;
+                right: -5px;
+                z-index: 1001;
+            }
+            
+            .profile-icon {
+                margin: 10px auto 0;
             }
         }
 
@@ -487,16 +570,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin-bottom: 0;
         }
         
-        #background-video {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: -1;
-        }
-        
         /* Responsive adjustments for form elements */
         @media screen and (max-width: 600px) {
             .document-inputs {
@@ -518,12 +591,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 width: 100%;
             }
         }
+
+        /* Add this to fix z-index issues */
+        .container, form, .form-group {
+            position: relative;
+            z-index: 1; /* Lower z-index than navbar */
+        }
     </style>
 </head>
 <body>
-    <video autoplay muted loop id="background-video">
-        <source src="videos/bg6.mp4" type="video/mp4">
-    </video>
     
     <header class="navbar">
         <div class="logo">
@@ -537,7 +613,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <a href="HomeLogin.php">HOME</a>
             <a href="datasets.php">ALL DATASETS</a>
             <a href="mydatasets.php">MY DATASETS</a>
-            <a href="user_settings.php">SETTINGS</a>
+            <div class="profile-icon" id="navbar-profile-icon" style="position: relative;">
+                <img src="images/avatarIconunknown.jpg" alt="Profile">
+                <?php if ($total_count > 0): ?>
+                    <span class="navbar-notification-badge" style="position: absolute; top: -5px; right: -5px;"><?php echo $total_count; ?></span>
+                <?php endif; ?>
+            </div>
         </nav>
     </header>
     
@@ -616,6 +697,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
     </div>
     
+    <?php include 'sidebar.php'; // Include the sidebar ?>
+    
     <script>
         // Document input functions
         function addDocumentInput() {
@@ -651,6 +734,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (!isClickInsideNavbar && navLinks.classList.contains('active')) {
                     navLinks.classList.remove('active');
                 }
+            });
+            
+            // Profile icon click handler
+            document.getElementById('navbar-profile-icon').addEventListener('click', function() {
+                document.querySelector('.sidebar').classList.add('active');
+                document.querySelector('.sidebar-overlay').classList.add('active');
             });
         });
     </script>

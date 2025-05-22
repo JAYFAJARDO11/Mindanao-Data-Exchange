@@ -10,6 +10,33 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
+// Count unread notifications
+$unreadSql = "SELECT COUNT(*) as count FROM user_notifications 
+              WHERE user_id = $user_id AND is_read = FALSE";
+$unreadResult = mysqli_query($conn, $unreadSql);
+$unreadCount = mysqli_fetch_assoc($unreadResult)['count'];
+
+// Initialize the total_count variable
+$total_count = 0;
+
+// Get count of pending access requests for this user
+$request_count = 0;
+if (isset($_SESSION['user_id'])) {
+    $requestCountSql = "SELECT COUNT(*) as count FROM dataset_access_requests 
+                        WHERE owner_id = $user_id AND status = 'Pending'";
+    $requestCountResult = mysqli_query($conn, $requestCountSql);
+    if ($requestCountResult) {
+        $row = mysqli_fetch_assoc($requestCountResult);
+        $request_count = $row['count'];
+    }
+}
+
+// Get count of unread notifications for this user
+$notif_count = $unreadCount;
+
+// Total count for badge display (requests + notifications)
+$total_count = $request_count + $notif_count;
+
 // Mark a notification as read if requested
 if (isset($_GET['mark_read']) && is_numeric($_GET['mark_read'])) {
     $notification_id = (int)$_GET['mark_read'];
@@ -43,12 +70,6 @@ $notificationsSql = "
     ORDER BY created_at DESC
 ";
 $notificationsResult = mysqli_query($conn, $notificationsSql);
-
-// Count unread notifications
-$unreadSql = "SELECT COUNT(*) as count FROM user_notifications 
-              WHERE user_id = $user_id AND is_read = FALSE";
-$unreadResult = mysqli_query($conn, $unreadSql);
-$unreadCount = mysqli_fetch_assoc($unreadResult)['count'];
 ?>
 
 <!DOCTYPE html>
@@ -59,10 +80,11 @@ $unreadCount = mysqli_fetch_assoc($unreadResult)['count'];
 
     <title>Your Notifications</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <?php include 'includes/background_styles.php'; ?>
     <style>
         body {
             margin: 0;
-            font-family: 'Segoe UI', sans-serif;
+            font-family: Arial, sans-serif;
             background-color: #f4f6f9;
             color: #333;
         }
@@ -70,20 +92,20 @@ $unreadCount = mysqli_fetch_assoc($unreadResult)['count'];
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 10px 5%;
+            padding: 10px 5%; /* Adjusted padding for a more compact navbar */
             padding-left: 30px;
-            background-color: #0099ff;
+            background-color: #0099ff; /* Transparent background */
             color: #cfd9ff;
             border-radius: 20px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             position: relative;
             margin: 10px 0;
             backdrop-filter: blur(10px);
-            max-width: 1200px;
-            width: 100%;
-            margin-top: 30px;
-            margin-left: auto;
-            margin-right: auto;
+            max-width: 1200px; /* Limit the maximum width */
+            width: 100%; /* Ensure it takes up the full width but doesn't exceed 1200px */
+            margin-top:30px;
+            margin-left: auto; /* Center align the navbar */
+            margin-right: auto; /* Center align the navbar */
             font-weight: bold;
             z-index: 1000;
         }
@@ -93,7 +115,7 @@ $unreadCount = mysqli_fetch_assoc($unreadResult)['count'];
         }
         .logo img {
             height: auto;
-            width: 80px;
+            width: 80px; /* Adjust logo size */
             max-width: 100%;
             margin-right: 15px;
         }
@@ -112,10 +134,10 @@ $unreadCount = mysqli_fetch_assoc($unreadResult)['count'];
             margin-left: 20px;
             text-decoration: none;
             font-size: 18px;
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease; /* Smooth transition for scaling */
         }
         .nav-links a:hover {
-            transform: scale(1.2);
+            transform: scale(1.2); /* Scale up on hover */
         }
         
         /* Mobile menu toggle button */
@@ -126,8 +148,6 @@ $unreadCount = mysqli_fetch_assoc($unreadResult)['count'];
             color: white;
             font-size: 24px;
             cursor: pointer;
-            padding: 0;
-            z-index: 1001;
         }
         
         .mobile-menu-toggle i {
@@ -139,10 +159,10 @@ $unreadCount = mysqli_fetch_assoc($unreadResult)['count'];
             .navbar {
                 padding: 10px;
                 border-radius: 15px;
-                width: 90%;
+                width: 90%; /* Smaller width on mobile */
                 max-width: 90%;
                 position: relative;
-                z-index: 2;
+                z-index: 2; /* Give navbar highest z-index */
             }
             
             .mobile-menu-toggle {
@@ -184,7 +204,7 @@ $unreadCount = mysqli_fetch_assoc($unreadResult)['count'];
                 border-radius: 0 0 15px 15px;
                 box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
                 display: none;
-                z-index: 9999;
+                z-index: 9999; /* Same as navbar to ensure it stays on top */
             }
             
             .nav-links.active {
@@ -196,6 +216,18 @@ $unreadCount = mysqli_fetch_assoc($unreadResult)['count'];
                 text-align: center;
                 padding: 10px 0;
                 margin: 0;
+            }
+            
+            .profile-icon {
+                margin: 10px auto 0;
+            }
+            
+            /* Ensure notification badge is visible on mobile */
+            .nav-links .navbar-notification-badge {
+                position: absolute;
+                top: -5px;
+                right: -5px;
+                z-index: 1001;
             }
         }
 
@@ -330,16 +362,49 @@ $unreadCount = mysqli_fetch_assoc($unreadResult)['count'];
             padding: 40px 0;
             color: #666;
         }
-        #background-video {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+        /* Profile icon styles */
+        .profile-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: white; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 70px;
+            position: relative;
+        }
+        .profile-icon img {
+            width: 150%;
+            height: auto;
+            border-radius: 50%;
             object-fit: cover;
-            z-index: -1;
+            cursor: pointer;
+        }
+        .profile-icon img:hover {
+            transform: scale(1.2); /* Slightly enlarge the image on hover */
         }
         
+        /* Notification badge styles */
+        .navbar-notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #ff3b30;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            padding: 0;               /* Remove extra padding */
+            line-height: 18px;        /* Match height for vertical centering */
+            text-align: center;       /* Ensure text is centered */
+        }
         /* Responsive styles for other elements */
         @media screen and (max-width: 768px) {
             .container {
@@ -423,9 +488,6 @@ $unreadCount = mysqli_fetch_assoc($unreadResult)['count'];
     </style>
 </head>
 <body>
-    <video autoplay muted loop id="background-video">
-        <source src="videos/bg6.mp4" type="video/mp4">
-    </video>
     
     <header class="navbar">
         <div class="logo">
@@ -439,7 +501,12 @@ $unreadCount = mysqli_fetch_assoc($unreadResult)['count'];
             <a href="HomeLogin.php">HOME</a>
             <a href="datasets.php">ALL DATASETS</a>
             <a href="mydatasets.php">MY DATASETS</a>
-            <a href="user_settings.php">SETTINGS</a>
+            <div class="profile-icon" id="navbar-profile-icon" style="position: relative;">
+                <img src="images/avatarIconunknown.jpg" alt="Profile">
+                <?php if ($total_count > 0): ?>
+                    <span class="navbar-notification-badge" style="position: absolute; top: -5px; right: -5px;"><?php echo $total_count; ?></span>
+                <?php endif; ?>
+            </div>
         </nav>
     </header>
     
@@ -529,6 +596,8 @@ $unreadCount = mysqli_fetch_assoc($unreadResult)['count'];
         <?php endif; ?>
     </div>
     
+    <?php include 'sidebar.php'; // Include the sidebar ?>
+    
     <script>
         // Mobile menu toggle
         document.addEventListener('DOMContentLoaded', function() {
@@ -545,6 +614,12 @@ $unreadCount = mysqli_fetch_assoc($unreadResult)['count'];
                 if (!isClickInsideNavbar && navLinks.classList.contains('active')) {
                     navLinks.classList.remove('active');
                 }
+            });
+            
+            // Profile icon click handler
+            document.getElementById('navbar-profile-icon').addEventListener('click', function() {
+                document.querySelector('.sidebar').classList.add('active');
+                document.querySelector('.sidebar-overlay').classList.add('active');
             });
         });
     </script>

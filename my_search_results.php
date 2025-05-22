@@ -79,6 +79,7 @@ if ($search) {
             db.user_id,
             db.organization_id,
             db.visibility,
+            db.created_at,
             u.first_name, u.last_name,
             o.name AS org_name,
             d.dataset_id,
@@ -105,7 +106,6 @@ if ($search) {
             OR c.name LIKE '%$search%')
             " . ($category ? "AND c.name = '$category'" : "") . "
             $visibility_condition
-        ORDER BY db.dataset_batch_id DESC
     ";
     $page_title = "Search results for: " . htmlspecialchars($search) . 
                   ($category ? " in category: " . htmlspecialchars($category) : "");
@@ -116,6 +116,7 @@ if ($search) {
             db.user_id,
             db.organization_id,
             db.visibility,
+            db.created_at,
             u.first_name, u.last_name,
             o.name AS org_name,
             d.dataset_id,
@@ -135,7 +136,6 @@ if ($search) {
         WHERE db.user_id = $user_id
             AND c.name = '$category'
             $visibility_condition
-        ORDER BY db.dataset_batch_id DESC
     ";
     $page_title = htmlspecialchars($category);
 } else {
@@ -145,6 +145,7 @@ if ($search) {
             db.user_id,
             db.organization_id,
             db.visibility,
+            db.created_at,
             u.first_name, u.last_name,
             o.name AS org_name,
             d.dataset_id,
@@ -163,7 +164,6 @@ if ($search) {
         LEFT JOIN datasetcategories c ON d.category_id = c.category_id
         WHERE db.user_id = $user_id
         " . ($visibility_condition ? "AND " . ltrim($visibility_condition, "AND ") : "") . "
-        ORDER BY db.dataset_batch_id DESC
     ";
     $page_title = "My Datasets";
 }
@@ -188,6 +188,7 @@ include 'batch_analytics.php';
     <title>My Datasets Search</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="assets/css/datasets_styles.css">
+    <?php include 'includes/background_styles.php'; ?>
     <style>
         html, body {
             height: 100%;
@@ -204,21 +205,22 @@ include 'batch_analytics.php';
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 10px 5%; /* Adjusted padding for a more compact navbar */
+            padding: 10px 5%;
             padding-left: 30px;
-            background-color: #0099ff; /* Transparent background */
+            background-color: #0099ff;
             color: #cfd9ff;
             border-radius: 20px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             position: relative;
             margin: 10px 0;
             backdrop-filter: blur(10px);
-            max-width: 1200px; /* Limit the maximum width */
-            width: 100%; /* Ensure it takes up the full width but doesn't exceed 1200px */
-            margin-top:30px;
-            margin-left: auto; /* Center align the navbar */
-            margin-right: auto; /* Center align the navbar */
+            max-width: 1200px;
+            width: 100%;
+            margin-top: 30px;
+            margin-left: auto;
+            margin-right: auto;
             font-weight: bold;
+            z-index: 1000;
         }
         
         .logo {
@@ -228,14 +230,21 @@ include 'batch_analytics.php';
         
         .logo img {
             height: auto;
-            width: 80px; /* Adjust logo size */
+            width: 80px;
             max-width: 100%;
+            margin-right: 15px;
+        }
+        
+        .logo h2 {
+            color: white;
+            margin: 0;
+            font-size: 22px;
+            white-space: nowrap;
         }
         
         .nav-links {
             display: flex;
             align-items: center;
-            gap: 20px;
         }
         
         .nav-links a {
@@ -243,11 +252,11 @@ include 'batch_analytics.php';
             margin-left: 20px;
             text-decoration: none;
             font-size: 18px;
-            transition: transform 0.3s ease; /* Smooth transition for scaling */
+            transition: transform 0.3s ease;
         }
         
         .nav-links a:hover {
-            transform: scale(1.2); /* Scale up on hover */
+            transform: scale(1.2);
         }
         
         .profile-icon {
@@ -258,7 +267,8 @@ include 'batch_analytics.php';
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-left: 15px;
+            margin-left: 70px;
+            position: relative;
         }
         
         .profile-icon img {
@@ -272,13 +282,9 @@ include 'batch_analytics.php';
         .profile-icon img:hover {
             transform: scale(1.2); /* Slightly enlarge the image on hover */
         }
-        
-        /* Updated notification badge styles for navbar */
-        .nav-links .profile-icon {
-            position: relative;
-        }
-        
-        .nav-links .notification-badge {
+
+        /* Notification badge styles */
+        .navbar-notification-badge {
             position: absolute;
             top: -5px;
             right: -5px;
@@ -292,7 +298,7 @@ include 'batch_analytics.php';
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 5;
+            z-index: 1001;
             padding: 0;               /* Remove extra padding */
             line-height: 18px;        /* Match height for vertical centering */
             text-align: center;       /* Ensure text is centered */
@@ -306,6 +312,8 @@ include 'batch_analytics.php';
             color: white;
             font-size: 24px;
             cursor: pointer;
+            padding: 0;
+            z-index: 1001;
         }
 
         /* Responsive styles for the navbar */
@@ -321,9 +329,6 @@ include 'batch_analytics.php';
                 position: relative;
                 z-index: 2; /* Give navbar highest z-index */
             }
-            .navbar h2{
-                font-size: 21px;
-            }
             
             .mobile-menu-toggle {
                 display: block;
@@ -333,8 +338,24 @@ include 'batch_analytics.php';
                 transform: translateY(-50%);
             }
             
+            .logo {
+                flex-direction: row;
+                align-items: center;
+                text-align: center;
+                max-width: 80%;
+            }
+            
             .logo img {
                 width: 50px;
+                margin-right: 12px;
+            }
+            
+            .logo h2 {
+                margin: 0;
+                font-size: 22px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
             
             .nav-links {
@@ -367,18 +388,12 @@ include 'batch_analytics.php';
             }
             
             /* Ensure notification badge is visible on mobile */
-            .nav-links .notification-badge {
+            .nav-links .navbar-notification-badge {
                 position: absolute;
                 top: -5px;
                 right: -5px;
-                z-index: 9999;
+                z-index: 1001;
             }
-        }
-
-        /* Add this to fix z-index issues */
-        .search-bar, #category-btn, .add-data-btn, #wrapper {
-            position: relative;
-            z-index: 1; /* Lower z-index than navbar */
         }
 
         @media screen and (max-width: 480px) {
@@ -387,8 +402,20 @@ include 'batch_analytics.php';
             }
             
             .logo img {
-                width: 50px;
+                width: 45px;
+                margin-right: 10px;
             }
+            
+            .logo h2 {
+                font-size: 18px;
+                text-align: center;
+            }
+        }
+        
+        /* Add this to fix z-index issues */
+        .search-bar, #category-btn, .add-data-btn, #wrapper {
+            position: relative;
+            z-index: 1; /* Lower z-index than navbar */
         }
         
         h2 {
@@ -461,15 +488,6 @@ include 'batch_analytics.php';
 
         #category-btn:hover {
             background-color: #45a049; /* Darker green on hover */
-        }
-        #background-video {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: -1; /* stays behind everything */
         }
         .no-datasets {
             display: flex;
@@ -548,9 +566,6 @@ include 'batch_analytics.php';
     </style>
 </head>
 <body>
-<video autoplay muted loop id="background-video">
-        <source src="videos/bg6.mp4" type="video/mp4">
-    </video>
 
 <div class="container">
 <header class="navbar">
@@ -565,10 +580,10 @@ include 'batch_analytics.php';
             <a href="HomeLogin.php">HOME</a>
             <a href="datasets.php">ALL DATASETS</a>
             <a href="mydatasets.php">MY DATASETS</a>
-            <div class="profile-icon" id="navbar-profile-icon">
+            <div class="profile-icon" id="navbar-profile-icon" style="position: relative;">
                 <img src="images/avatarIconunknown.jpg" alt="Profile">
                 <?php if ($total_count > 0): ?>
-                    <span class="notification-badge"><?php echo $total_count; ?></span>
+                    <span class="navbar-notification-badge" style="position: absolute; top: -5px; right: -5px;"><?php echo $total_count; ?></span>
                 <?php endif; ?>
             </div>
         </nav>
@@ -655,6 +670,14 @@ include 'batch_analytics.php';
             
             mobileMenuToggle.addEventListener('click', function() {
                 navLinks.classList.toggle('active');
+            });
+            
+            // Close menu when clicking outside
+            document.addEventListener('click', function(event) {
+                const isClickInsideNavbar = event.target.closest('.navbar');
+                if (!isClickInsideNavbar && navLinks.classList.contains('active')) {
+                    navLinks.classList.remove('active');
+                }
             });
             
             // Profile icon click handler

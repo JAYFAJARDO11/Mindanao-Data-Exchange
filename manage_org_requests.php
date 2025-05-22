@@ -223,6 +223,7 @@ echo "<!-- Total requests in system: " . $allRequestsCount . " -->";
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Manage Organization Membership Requests</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <?php include 'includes/background_styles.php'; ?>
     <style>
         body {
             margin: 0;
@@ -425,15 +426,6 @@ echo "<!-- Total requests in system: " . $allRequestsCount . " -->";
             padding: 20px;
             text-align: center;
             color: #6c757d;
-        }
-        #background-video {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: -1;
         }
         .message-text {
             max-height: 120px;
@@ -840,10 +832,6 @@ echo "<!-- Total requests in system: " . $allRequestsCount . " -->";
     </style>
 </head>
 <body>
-    <video autoplay muted loop id="background-video">
-        <source src="videos/bg6.mp4" type="video/mp4">
-    </video>
-    
     <header class="navbar">
         <div class="logo">
             <img src="images/mdx_logo.png" alt="Mindanao Data Exchange Logo">

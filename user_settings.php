@@ -86,14 +86,12 @@ $hasOrganization = !empty($organizationId);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Settings</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <?php include 'includes/background_styles.php'; ?>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background: url('images/Mindanao.png');
-            background-size: cover;
-            background-attachment: fixed;
         }
         .navbar {
             display: flex;
@@ -114,7 +112,7 @@ $hasOrganization = !empty($organizationId);
             margin-left: auto;
             margin-right: auto;
             font-weight: bold;
-            z-index: 999;
+            z-index: 1000;
         }
         .logo {
             display: flex;
@@ -125,6 +123,12 @@ $hasOrganization = !empty($organizationId);
             width: 80px;
             max-width: 100%;
             margin-right: 15px;
+        }
+        .logo h2 {
+            color: white;
+            margin: 0;
+            font-size: 22px;
+            white-space: nowrap;
         }
         .search-bar {
             flex-grow: 1;
@@ -152,7 +156,7 @@ $hasOrganization = !empty($organizationId);
         .nav-links {
             display: flex;
             align-items: center;
-            gap: 20px;
+            position: relative;
         }
         .nav-links a {
             color: white;
@@ -172,7 +176,8 @@ $hasOrganization = !empty($organizationId);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-left: 20px;
+            margin-left: 70px;
+            position: relative;
         }
         .profile-icon img {
             width: 150%;
@@ -180,6 +185,30 @@ $hasOrganization = !empty($organizationId);
             border-radius: 50%;
             object-fit: cover;
             cursor: pointer;
+        }
+        .profile-icon img:hover {
+            transform: scale(1.2); /* Slightly enlarge the image on hover */
+        }
+        
+        /* Notification badge styles */
+        .navbar .nav-links .navbar-notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #ff3b30;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            padding: 0;
+            line-height: 18px;
+            text-align: center;
         }
         
         /* Mobile menu toggle button */
@@ -212,17 +241,28 @@ $hasOrganization = !empty($organizationId);
                 border-radius: 15px;
                 width: 90%;
                 max-width: 90%;
+                position: relative;
+                z-index: 2;
             }
             
             .logo {
                 flex-direction: row;
+                align-items: center;
                 text-align: center;
                 max-width: 80%;
             }
             
             .logo img {
                 width: 50px;
-                margin-right: 10px;
+                margin-right: 12px;
+            }
+            
+            .logo h2 {
+                margin: 0;
+                font-size: 22px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
             
             .search-bar {
@@ -255,7 +295,15 @@ $hasOrganization = !empty($organizationId);
             }
             
             .profile-icon {
-                margin-left: 0;
+                margin: 10px auto 0;
+            }
+            
+            /* Ensure notification badge is visible on mobile */
+            .navbar .nav-links .navbar-notification-badge {
+                position: absolute;
+                top: -5px;
+                right: -5px;
+                z-index: 1001;
             }
             
             .stats-box {
@@ -272,6 +320,22 @@ $hasOrganization = !empty($organizationId);
             
             h1 {
                 font-size: 40px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar {
+                padding: 8px 10px;
+            }
+            
+            .logo img {
+                width: 45px;
+                margin-right: 10px;
+            }
+            
+            .logo h2 {
+                font-size: 18px;
+                text-align: center;
             }
         }
 
@@ -517,16 +581,6 @@ $hasOrganization = !empty($organizationId);
             cursor: not-allowed;
         }
         
-        #background-video {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: -1;
-        }
-        
         #profile-wrapper {
             display: flex;
             flex-wrap: wrap;
@@ -701,7 +755,7 @@ $hasOrganization = !empty($organizationId);
             padding: 15px 25px;
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            z-index: 1000;
+            z-index: 1001;
             transform: translateX(150%);
             transition: transform 0.3s ease-in-out;
             font-weight: bold;
@@ -723,6 +777,18 @@ $hasOrganization = !empty($organizationId);
             margin: 10px 0;
             border-radius: 4px;
             font-size: 14px;
+        }
+        
+        .success-message {
+            color: #155724;
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
         }
 
         .email-update-container {
@@ -811,30 +877,6 @@ $hasOrganization = !empty($organizationId);
             background-color: #007acc;
             color: white !important;
             text-decoration: none;
-        }
-        
-        .nav-links .profile-icon {
-            position: relative;
-        }
-        
-        .nav-links .notification-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background-color: #ff3b30;
-            color: white;
-            border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            font-size: 12px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 5;
-            padding: 0;
-            line-height: 18px;
-            text-align: center;
         }
         
         /* Responsive styles for smaller screens */
@@ -1013,9 +1055,6 @@ $hasOrganization = !empty($organizationId);
     </style>
 </head>
 <body>
-    <video autoplay muted loop id="background-video">
-        <source src="videos/bg6.mp4" type="video/mp4">
-    </video>
 
     <?php if (isset($_SESSION['success_message'])): ?>
     <div class="floating-message" id="successMessage">
@@ -1029,34 +1068,38 @@ $hasOrganization = !empty($organizationId);
     <div id="wrapper">
     <header class="navbar">
             <div class="logo">
-                <img src="images/mdx_logo.png" alt="Mangasay Data Exchange Logo">
+                <img src="images/mdx_logo.png" alt="Mindanao Data Exchange Logo">
+                <h2>User Settings</h2>
             </div>
-            <form id="searchForm" action="search_results.php" method="GET">
-                <div class="search-bar">
-                    <input type="text" name="search" placeholder="Search datasets" onfocus="showDropdown()" onblur="hideDropdown()">
-                    <button>
-                        <img src="images/search_icon.png" alt="Search">
-                    </button>
-                </div>
-            </form>
             <button class="mobile-menu-toggle" id="mobile-menu-toggle">
                 <i class="fas fa-bars"></i>
             </button>
             <nav class="nav-links" id="nav-links">
                 <a href="HomeLogin.php">HOME</a>
-                <a href="datasets.php">DATASETS</a>
-                <a onclick="showModal()" style="cursor: pointer;">CATEGORY</a>
-                <div class="profile-icon" id="navbar-profile-icon">
+                <a href="datasets.php">ALL DATASETS</a>
+                <a href="mydatasets.php">MY DATASETS</a>
+                <div class="profile-icon" id="navbar-profile-icon" style="position: relative;">
                     <img src="images/avatarIconunknown.jpg" alt="Profile">
                     <?php if ($total_count > 0): ?>
-                        <span class="notification-badge"><?php echo $total_count; ?></span>
+                        <span class="navbar-notification-badge" style="position: absolute; top: -5px; right: -5px;"><?php echo $total_count; ?></span>
                     <?php endif; ?>
                 </div>
             </nav>
         </header> 
         <div class="settings-container">
+            <?php if (isset($_SESSION['success_message'])): ?>
+                <div class="success-message" style="margin-bottom: 20px;">
+                    <?php 
+                    echo $_SESSION['success_message'];
+                    unset($_SESSION['success_message']);
+                    ?>
+                </div>
+            <?php endif; ?>
+            
             <div id="header">
-            <h2>User Settings</h2>
+                <h2>User Settings</h2>
+            </div>
+            <div id="header">
                 <form action="verify_changes.php" method="POST" enctype="multipart/form-data">
                     <div id="profpic-firstname">
                         <div>
@@ -1106,6 +1149,16 @@ $hasOrganization = !empty($organizationId);
                             <label id="org-label" for="organization">Current Organization</label>
                             <input type="text" id="organization" name="organization" value="<?php echo $organizationName; ?>" readonly>
                         </div>
+                        
+                        <?php if (isset($_SESSION['organization_error'])): ?>
+                            <div class="error-message">
+                                <?php 
+                                echo $_SESSION['organization_error'];
+                                unset($_SESSION['organization_error']);
+                                ?>
+                            </div>
+                        <?php endif; ?>
+                        
                         <?php if ($has_pending_request): ?>
                             <div class="pending-request-info">
                                 <p><strong>Pending Request:</strong> You have requested to join <strong><?php echo htmlspecialchars($pending_request['organization_name']); ?></strong></p>
@@ -1169,6 +1222,16 @@ $hasOrganization = !empty($organizationId);
                 <br><br>
                 <div id="change-password">
                     <h2>Change Password</h2>
+                    
+                    <?php if (isset($_SESSION['password_change_success'])): ?>
+                        <div class="success-message">
+                            <?php 
+                            echo $_SESSION['password_change_success'];
+                            unset($_SESSION['password_change_success']);
+                            ?>
+                        </div>
+                    <?php endif; ?>
+                    
                     <form action="verify_changes.php" method="POST" id="passwordForm">
                         <div class="form-group">
                             <label for="current_password">Current Password</label>
@@ -1186,9 +1249,20 @@ $hasOrganization = !empty($organizationId);
                             <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm new password" required>
                         </div>
 
-                        <?php if (isset($_SESSION['error_message']) && isset($_SESSION['error_type']) && $_SESSION['error_type'] === 'password'): ?>
-                            <div class="error-message"><?php echo $_SESSION['error_message']; ?></div>
-                            <?php unset($_SESSION['error_message'], $_SESSION['error_type']); ?>
+                        <?php if (isset($_SESSION['password_change_error'])): ?>
+                            <div class="error-message">
+                                <?php 
+                                echo $_SESSION['password_change_error'];
+                                unset($_SESSION['password_change_error'], $_SESSION['password_change_error_field']);
+                                ?>
+                            </div>
+                        <?php elseif (isset($_SESSION['error_message']) && isset($_SESSION['error_type']) && $_SESSION['error_type'] === 'password'): ?>
+                            <div class="error-message">
+                                <?php 
+                                echo $_SESSION['error_message'];
+                                unset($_SESSION['error_message'], $_SESSION['error_type']);
+                                ?>
+                            </div>
                         <?php endif; ?>
 
                         <div style="text-align: center;">
@@ -1250,15 +1324,17 @@ $hasOrganization = !empty($organizationId);
                 // Close menu when clicking outside
                 document.addEventListener('click', function(event) {
                     const isClickInsideNavbar = event.target.closest('.navbar');
-                    const isClickOnToggle = event.target.closest('#mobile-menu-toggle');
-                    
-                    if (!isClickInsideNavbar || (isClickInsideNavbar && !isClickOnToggle && event.target.tagName !== 'A')) {
-                        if (navLinks.classList.contains('active') && !isClickOnToggle) {
-                            navLinks.classList.remove('active');
-                        }
+                    if (!isClickInsideNavbar && navLinks.classList.contains('active')) {
+                        navLinks.classList.remove('active');
                     }
                 });
             }
+            
+            // Profile icon click handler
+            document.getElementById('navbar-profile-icon').addEventListener('click', function() {
+                document.querySelector('.sidebar').classList.add('active');
+                document.querySelector('.sidebar-overlay').classList.add('active');
+            });
         });
 
         // Success Message Animation
@@ -1332,13 +1408,6 @@ $hasOrganization = !empty($organizationId);
                     window.location.href = 'create_organization_request.php';
                 });
         }
-        // Update the click event to use the specific ID
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('navbar-profile-icon').addEventListener('click', function() {
-                document.querySelector('.sidebar').classList.add('active');
-                document.querySelector('.sidebar-overlay').classList.add('active');
-            });
-        });
     </script>
 </body>
 </html>

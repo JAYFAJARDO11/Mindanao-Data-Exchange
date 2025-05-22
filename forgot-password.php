@@ -63,6 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <meta charset="UTF-8">
     <title>Forgot Password</title>
+    <?php include 'includes/background_styles.php'; ?>
     <style>
     html, body {
         height: auto;
@@ -114,16 +115,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
     .nav-links a:hover {
         transform: scale(1.2); /* Scale up the link by 20% */
-    }
-
-    #background-video {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        z-index: -1; /* stays behind everything */
     }
     .nav-links {
         display: flex;
@@ -191,9 +182,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </style>
 </head>
 <body>
-    <video autoplay muted loop id="background-video">
-                <source src="videos/bg6.mp4" type="video/mp4">
-    </video>
 
     <header class="navbar">
         <div class="logo">

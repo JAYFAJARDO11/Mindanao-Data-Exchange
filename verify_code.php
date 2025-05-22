@@ -26,6 +26,9 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
                 // Clear the session after successful insertion
                 unset($_SESSION['pending_user']);
                 $_SESSION['verified'] = true;
+                
+                // Set flag to allow access to the success page
+                $_SESSION['registration_complete'] = true;
 
                 // Redirect to account creation page
                 header("Location: registration_success.php");

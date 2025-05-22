@@ -209,7 +209,7 @@ $total_count = $request_count + $notif_count;
         <span id="user_settings">User Settings</span>
     </a>
     
-    <a href="create_organization_request.php" class="menu-item">
+    <a href="check_organization.php" class="menu-item">
         <i class="fa-solid fa-building"></i>
         <span>Create Organization</span>
     </a>

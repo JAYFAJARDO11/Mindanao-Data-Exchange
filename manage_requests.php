@@ -10,6 +10,32 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
+// Initialize the total_count variable
+$total_count = 0;
+
+// Get count of pending access requests for this user
+$request_count = 0;
+$requestCountSql = "SELECT COUNT(*) as count FROM dataset_access_requests 
+                    WHERE owner_id = $user_id AND status = 'Pending'";
+$requestCountResult = mysqli_query($conn, $requestCountSql);
+if ($requestCountResult) {
+    $row = mysqli_fetch_assoc($requestCountResult);
+    $request_count = $row['count'];
+}
+
+// Get count of unread notifications for this user
+$notif_count = 0;
+$notifCountSql = "SELECT COUNT(*) as count FROM user_notifications 
+                  WHERE user_id = $user_id AND is_read = FALSE";
+$notifCountResult = mysqli_query($conn, $notifCountSql);
+if ($notifCountResult) {
+    $row = mysqli_fetch_assoc($notifCountResult);
+    $notif_count = $row['count'];
+}
+
+// Total count for badge display (requests + notifications)
+$total_count = $request_count + $notif_count;
+
 // Handle request approval/rejection
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_id']) && isset($_POST['action'])) {
     $request_id = (int)$_POST['request_id'];
@@ -126,10 +152,11 @@ $requestsResult = mysqli_query($conn, $requestsSql);
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Manage Dataset Access Requests</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <?php include 'includes/background_styles.php'; ?>
     <style>
         body {
             margin: 0;
-            font-family: 'Segoe UI', sans-serif;
+            font-family: Arial, sans-serif;
             background-color: #f4f6f9;
             color: #333;
             overflow-x: hidden;
@@ -150,11 +177,10 @@ $requestsResult = mysqli_query($conn, $requestsSql);
             backdrop-filter: blur(10px);
             max-width: 1200px;
             width: 100%;
-            margin-top: 30px;
+            margin-top:30px;
             margin-left: auto;
             margin-right: auto;
             font-weight: bold;
-            box-sizing: border-box;
             z-index: 1000;
         }
         .logo {
@@ -165,6 +191,17 @@ $requestsResult = mysqli_query($conn, $requestsSql);
             height: auto;
             width: 80px;
             max-width: 100%;
+            margin-right: 15px;
+        }
+        .logo h2 {
+            color: white;
+            margin: 0;
+            font-size: 22px;
+            white-space: nowrap;
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
         }
         .nav-links a {
             color: white;
@@ -176,6 +213,51 @@ $requestsResult = mysqli_query($conn, $requestsSql);
         .nav-links a:hover {
             transform: scale(1.2);
         }
+        
+        /* Profile icon styles */
+        .profile-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: white; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 70px;
+            position: relative;
+        }
+        .profile-icon img {
+            width: 150%;
+            height: auto;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+        }
+        .profile-icon img:hover {
+            transform: scale(1.2); /* Slightly enlarge the image on hover */
+        }
+        
+        /* Notification badge styles */
+        .navbar-notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #ff3b30;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            padding: 0;
+            line-height: 18px;
+            text-align: center;
+        }
+        
         .container {
             max-width: 1100px;
             margin: 40px auto;
@@ -268,15 +350,6 @@ $requestsResult = mysqli_query($conn, $requestsSql);
             padding: 20px;
             text-align: center;
             color: #6c757d;
-        }
-        #background-video {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: -1;
         }
         .reason-text {
             font-size: 14px;
@@ -414,8 +487,6 @@ $requestsResult = mysqli_query($conn, $requestsSql);
             color: white;
             font-size: 24px;
             cursor: pointer;
-            padding: 0;
-            z-index: 1001;
         }
         
         /* Responsive styles */
@@ -430,10 +501,6 @@ $requestsResult = mysqli_query($conn, $requestsSql);
                 width: 90%;
             }
             
-            .logo h2 {
-                font-size: 18px;
-            }
-            
             .modal-content {
                 width: 70%;
             }
@@ -445,10 +512,12 @@ $requestsResult = mysqli_query($conn, $requestsSql);
         
         @media screen and (max-width: 768px) {
             .navbar {
-                padding: 10px 15px;
-                width: calc(100% - 20px);
-                margin-left: 10px;
-                margin-right: 10px;
+                padding: 10px;
+                border-radius: 15px;
+                width: 90%; /* Smaller width on mobile */
+                max-width: 90%;
+                position: relative;
+                z-index: 2; /* Give navbar highest z-index */
             }
             
             .mobile-menu-toggle {
@@ -459,13 +528,24 @@ $requestsResult = mysqli_query($conn, $requestsSql);
                 transform: translateY(-50%);
             }
             
+            .logo {
+                flex-direction: row;
+                align-items: center;
+                text-align: center;
+                max-width: 80%;
+            }
+            
             .logo img {
                 width: 50px;
+                margin-right: 12px;
             }
             
             .logo h2 {
-                font-size: 16px;
-                margin-left: 10px;
+                margin: 0;
+                font-size: 22px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
             
             .nav-links {
@@ -479,7 +559,7 @@ $requestsResult = mysqli_query($conn, $requestsSql);
                 border-radius: 0 0 15px 15px;
                 box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
                 display: none;
-                z-index: 1000;
+                z-index: 9999; /* Same as navbar to ensure it stays on top */
             }
             
             .nav-links.active {
@@ -491,6 +571,18 @@ $requestsResult = mysqli_query($conn, $requestsSql);
                 text-align: center;
                 padding: 10px 0;
                 margin: 0;
+            }
+            
+            .profile-icon {
+                margin: 10px auto 0;
+            }
+            
+            /* Ensure notification badge is visible on mobile */
+            .nav-links .navbar-notification-badge {
+                position: absolute;
+                top: -5px;
+                right: -5px;
+                z-index: 1001;
             }
             
             .container {
@@ -584,12 +676,13 @@ $requestsResult = mysqli_query($conn, $requestsSql);
             }
             
             .logo img {
-                width: 40px;
+                width: 45px;
+                margin-right: 10px;
             }
             
             .logo h2 {
-                font-size: 14px;
-                margin-left: 8px;
+                font-size: 18px;
+                text-align: center;
             }
             
             h1 {
@@ -601,14 +694,15 @@ $requestsResult = mysqli_query($conn, $requestsSql);
                 margin: 15px auto;
                 width: 95%;
             }
+            
+            /* Table responsive */
+            .requests-table {
+                margin-top: 15px;
+            }
         }
     </style>
 </head>
 <body>
-    <video autoplay muted loop id="background-video">
-        <source src="videos/bg6.mp4" type="video/mp4">
-    </video>
-    
     <header class="navbar">
         <div class="logo">
             <img src="images/mdx_logo.png" alt="Mindanao Data Exchange Logo">
@@ -621,7 +715,12 @@ $requestsResult = mysqli_query($conn, $requestsSql);
             <a href="HomeLogin.php">HOME</a>
             <a href="datasets.php">ALL DATASETS</a>
             <a href="mydatasets.php">MY DATASETS</a>
-            <a href="user_settings.php"><i class="fas fa-user-circle"></i></a>
+            <div class="profile-icon" id="navbar-profile-icon" style="position: relative;">
+                <img src="images/avatarIconunknown.jpg" alt="Profile">
+                <?php if ($total_count > 0): ?>
+                    <span class="navbar-notification-badge" style="position: absolute; top: -5px; right: -5px;"><?php echo $total_count; ?></span>
+                <?php endif; ?>
+            </div>
         </nav>
     </header>
     
@@ -727,6 +826,8 @@ $requestsResult = mysqli_query($conn, $requestsSql);
         </div>
     </div>
 
+    <?php include 'sidebar.php'; // Include the sidebar ?>
+
     <script>
         // Function to show the reason modal
         function showReasonModal(requestId) {
@@ -778,6 +879,12 @@ $requestsResult = mysqli_query($conn, $requestsSql);
                 if (!isClickInsideNavbar && navLinks.classList.contains('active')) {
                     navLinks.classList.remove('active');
                 }
+            });
+            
+            // Profile icon click handler
+            document.getElementById('navbar-profile-icon').addEventListener('click', function() {
+                document.querySelector('.sidebar').classList.add('active');
+                document.querySelector('.sidebar-overlay').classList.add('active');
             });
         });
     </script>

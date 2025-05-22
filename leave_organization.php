@@ -133,7 +133,8 @@ if ($is_owner) {
 if (isset($_POST['confirm_leave']) && $_POST['confirm_leave'] === 'yes' && isset($_POST['confirm_text'])) {
     // Check if confirmation text is correct
     if (strtoupper($_POST['confirm_text']) !== 'LEAVE') {
-        $_SESSION['error_message'] = "Please type 'LEAVE' to confirm that you want to leave the organization.";
+        // Use an organization-specific error message
+        $_SESSION['organization_error'] = "Please type 'LEAVE' exactly to confirm that you want to leave the organization.";
         header("Location: user_settings.php");
         exit();
     }
@@ -276,6 +277,7 @@ if (isset($_POST['confirm_leave']) && $_POST['confirm_leave'] === 'yes' && isset
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leave Organization</title>
+    <?php include 'includes/background_styles.php'; ?>
     <style>
         body {
             font-family: 'Segoe UI', sans-serif;
@@ -407,15 +409,6 @@ if (isset($_POST['confirm_leave']) && $_POST['confirm_leave'] === 'yes' && isset
         .role-admin {
             background-color: #20c997;
         }
-        #background-video {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: -1;
-        }
         
         /* Confirmation form styling */
         form input[type="text"] {
@@ -454,10 +447,6 @@ if (isset($_POST['confirm_leave']) && $_POST['confirm_leave'] === 'yes' && isset
     </style>
 </head>
 <body>
-    <video autoplay muted loop id="background-video">
-        <source src="videos/bg6.mp4" type="video/mp4">
-    </video>
-    
     <header class="navbar">
         <div class="logo">
             <img src="images/mdx_logo.png" alt="Mindanao Data Exchange Logo">

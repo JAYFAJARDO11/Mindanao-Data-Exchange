@@ -53,7 +53,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $stmt->bind_param("si", $newPassword, $userId);
                 
                 if ($stmt->execute()) {
-                    set_success_message("Password updated successfully!");
+                    // Use password-specific success message
+                    $_SESSION['password_change_success'] = "Password updated successfully!";
                     
                     // Log successful password change
                     log_error("Password updated successfully", "auth", [
@@ -89,6 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verify Changes</title>
     <link rel="stylesheet" href="assets/css/error_styles.css">
+    <?php include 'includes/background_styles.php'; ?>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -225,21 +227,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             border-radius: 4px;
             font-size: 14px;
         }
-        #background-video {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: -1;
-        }
     </style>
 </head>
 <body>
-    <video autoplay muted loop id="background-video">
-        <source src="videos/bg6.mp4" type="video/mp4">
-    </video>
 
     <header class="navbar">
         <div class="logo">

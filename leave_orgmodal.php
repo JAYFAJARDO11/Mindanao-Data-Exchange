@@ -34,6 +34,19 @@
         color: #0099ff; /* blue for instructions */
         margin-bottom: 20px;
     }
+    
+    /* Organization leave error message styling */
+    .org-leave-error {
+        color: #dc3545;
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: bold;
+    }
+    
     .leave-org-modal-content input[type="text"] {
         border: 1.5px solid #0099ff; /* blue border */
         border-radius: 5px;

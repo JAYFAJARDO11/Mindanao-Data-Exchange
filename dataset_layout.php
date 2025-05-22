@@ -9,6 +9,9 @@
 // $conn - Database connection
 // $total_count - Total notification count
 
+// Get the current sort option (if any)
+$sort_option = isset($_GET['sort']) ? $_GET['sort'] : 'newest';
+
 // Function to fix newlines in descriptions
 function fixNewlines($text) {
     if (!$text) return '';
@@ -23,6 +26,77 @@ function fixNewlines($text) {
     $text = str_replace(['\r\n', '\n', '\r'], "\n", $text);
     
     return $text;
+}
+
+// Function to calculate popularity score based on views, downloads, and upvotes
+function calculatePopularityScore($views, $downloads, $upvotes) {
+    // Weight factors can be adjusted as needed
+    $view_weight = 1;
+    $download_weight = 3;
+    $upvote_weight = 2;
+    
+    return ($views * $view_weight) + ($downloads * $download_weight) + ($upvotes * $upvote_weight);
+}
+
+// Store all rows in an array for sorting
+$datasets = [];
+if (mysqli_num_rows($result) > 0) {
+    while ($row = mysqli_fetch_assoc($result)) {
+        // Get analytics data for each dataset
+        $batch_id = isset($row['dataset_batch_id']) ? $row['dataset_batch_id'] : null;
+        $analytics = function_exists('get_batch_analytics') ? get_batch_analytics($conn, $batch_id) : ['total_views' => 0, 'total_downloads' => 0];
+        $row['total_views'] = $analytics['total_views'];
+        $row['total_downloads'] = $analytics['total_downloads'];
+        $upvotes = isset($row['upvotes']) ? $row['upvotes'] : 0;
+        
+        // Calculate popularity score
+        $row['popularity_score'] = calculatePopularityScore($analytics['total_views'], $analytics['total_downloads'], $upvotes);
+        
+        $datasets[] = $row;
+    }
+}
+
+// Sort the datasets based on the selected option
+if (!empty($datasets)) {
+    switch ($sort_option) {
+        case 'newest':
+            // Assuming dataset_id is auto-incremented and higher = newer
+            usort($datasets, function($a, $b) {
+                $id_a = isset($a['dataset_id']) ? $a['dataset_id'] : 0;
+                $id_b = isset($b['dataset_id']) ? $b['dataset_id'] : 0;
+                return $id_b - $id_a; // Descending order
+            });
+            break;
+        case 'oldest':
+            usort($datasets, function($a, $b) {
+                $id_a = isset($a['dataset_id']) ? $a['dataset_id'] : 0;
+                $id_b = isset($b['dataset_id']) ? $b['dataset_id'] : 0;
+                return $id_a - $id_b; // Ascending order
+            });
+            break;
+        case 'most_viewed':
+            usort($datasets, function($a, $b) {
+                return $b['total_views'] - $a['total_views'];
+            });
+            break;
+        case 'most_downloaded':
+            usort($datasets, function($a, $b) {
+                return $b['total_downloads'] - $a['total_downloads'];
+            });
+            break;
+        case 'most_upvoted':
+            usort($datasets, function($a, $b) {
+                $upvotes_a = isset($a['upvotes']) ? $a['upvotes'] : 0;
+                $upvotes_b = isset($b['upvotes']) ? $b['upvotes'] : 0;
+                return $upvotes_b - $upvotes_a;
+            });
+            break;
+        case 'most_popular':
+            usort($datasets, function($a, $b) {
+                return $b['popularity_score'] - $a['popularity_score'];
+            });
+            break;
+    }
 }
 ?>
 
@@ -53,6 +127,20 @@ function fixNewlines($text) {
     .dataset-uploader {
         overflow: hidden;
         text-overflow: ellipsis;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+    }
+    
+    .uploader-name {
+        margin-right: 5px;
+    }
+    
+    .upload-date {
+        color: #666;
+        font-size: 0.9em;
+        white-space: nowrap;
     }
     
     .dataset-actions {
@@ -232,6 +320,70 @@ function fixNewlines($text) {
         border-radius: 3px;
     }
     
+    /* Sort control styles */
+    .controls-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    
+    .filter-controls {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .sort-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .sort-label {
+        font-weight: bold;
+        color: #333;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .sort-select {
+        padding: 6px 10px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        background-color: white;
+        font-size: 14px;
+        min-width: 150px;
+        cursor: pointer;
+    }
+    
+    .sort-select:focus {
+        outline: none;
+        border-color: #0099ff;
+        box-shadow: 0 0 0 2px rgba(0, 153, 255, 0.2);
+    }
+    
+    @media (max-width: 768px) {
+        .controls-wrapper {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .filter-controls {
+            width: 100%;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group, .sort-group {
+            margin-bottom: 10px;
+        }
+    }
+    
     @media (max-width: 480px) {
         .dataset-actions {
             flex-wrap: wrap;
@@ -299,31 +451,62 @@ function fixNewlines($text) {
             align-items: center;
             gap: 5px;
         }
+        
+        .sort-group {
+            width: 100%;
+        }
+        
+        .sort-select {
+            flex-grow: 1;
+        }
+        
+        .dataset-uploader {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
+        }
     }
 </style>
 
 <div class="controls-wrapper">
-    <div class="filter-group">
-        <div class="filter-label">
-            <i class="fa-solid fa-filter"></i> VISIBILITY
+    <div class="filter-controls">
+        <div class="filter-group">
+            <div class="filter-label">
+                <i class="fa-solid fa-filter"></i> VISIBILITY
+            </div>
+            <div class="filter-options">
+                <a href="<?= $filter_base_url ?>" class="filter-btn <?= $current_filter == '' ? 'active' : '' ?>">All</a>
+                <a href="<?= $filter_base_url . (strpos($filter_base_url, '?') !== false ? '&' : '?') . 'visibility=Public' ?>" class="filter-btn <?= $current_filter == 'Public' ? 'active' : '' ?>">Public</a>
+                <a href="<?= $filter_base_url . (strpos($filter_base_url, '?') !== false ? '&' : '?') . 'visibility=Private' ?>" class="filter-btn <?= $current_filter == 'Private' ? 'active' : '' ?>">Private</a>
+            </div>
         </div>
-        <div class="filter-options">
-            <a href="<?= $filter_base_url ?>" class="filter-btn <?= $current_filter == '' ? 'active' : '' ?>">All</a>
-            <a href="<?= $filter_base_url . (strpos($filter_base_url, '?') !== false ? '&' : '?') . 'visibility=Public' ?>" class="filter-btn <?= $current_filter == 'Public' ? 'active' : '' ?>">Public</a>
-            <a href="<?= $filter_base_url . (strpos($filter_base_url, '?') !== false ? '&' : '?') . 'visibility=Private' ?>" class="filter-btn <?= $current_filter == 'Private' ? 'active' : '' ?>">Private</a>
+        
+        <div class="sort-group">
+            <div class="sort-label">
+                <i class="fa-solid fa-sort"></i> SORT BY
+            </div>
+            <select id="sort-select" class="sort-select" onchange="updateSort(this.value)">
+                <option value="newest" <?= $sort_option == 'newest' ? 'selected' : '' ?>>Newest First</option>
+                <option value="oldest" <?= $sort_option == 'oldest' ? 'selected' : '' ?>>Oldest First</option>
+                <option value="most_viewed" <?= $sort_option == 'most_viewed' ? 'selected' : '' ?>>Most Viewed</option>
+                <option value="most_downloaded" <?= $sort_option == 'most_downloaded' ? 'selected' : '' ?>>Most Downloaded</option>
+                <option value="most_upvoted" <?= $sort_option == 'most_upvoted' ? 'selected' : '' ?>>Most Upvoted</option>
+                <option value="most_popular" <?= $sort_option == 'most_popular' ? 'selected' : '' ?>>Most Popular</option>
+            </select>
         </div>
     </div>
+    
     <?php include 'view_toggle.php'; ?>
 </div>
 
 <!-- Card View -->
 <div class="dataset-grid">
-    <?php if (mysqli_num_rows($result) > 0): ?>
-        <?php while ($row = mysqli_fetch_assoc($result)): ?>
+    <?php if (!empty($datasets)): ?>
+        <?php foreach ($datasets as $row): ?>
             <?php
                 // Get common variables
                 $batch_id = isset($row['dataset_batch_id']) ? $row['dataset_batch_id'] : null;
-                $analytics = function_exists('get_batch_analytics') ? get_batch_analytics($conn, $batch_id) : ['total_views' => 0, 'total_downloads' => 0];
+                $analytics = ['total_views' => $row['total_views'], 'total_downloads' => $row['total_downloads']];
                 $is_private_unowned = isset($row['visibility']) && isset($row['user_id']) ? 
                     ($row['visibility'] == 'Private' && $row['user_id'] != $_SESSION['user_id']) : false;
                 
@@ -362,6 +545,12 @@ function fixNewlines($text) {
                 </div>
                 <div class="dataset-uploader">
                     <span class="uploader-name">Uploaded by: <?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) ?></span>
+                    <?php if(isset($row['created_at'])): ?>
+                    <span class="upload-date">
+                        <i class="fa-regular fa-calendar"></i> 
+                        <?= date('M d, Y', strtotime($row['created_at'])) ?>
+                    </span>
+                    <?php endif; ?>
                 </div>
                 <div class="dataset-actions">
                     <div class="dataset-analytics">
@@ -406,7 +595,7 @@ function fixNewlines($text) {
                     </div>
                 </div>
             </div>
-        <?php endwhile; ?>
+        <?php endforeach; ?>
     <?php endif; ?>
 </div>
 
@@ -422,98 +611,115 @@ function fixNewlines($text) {
             </tr>
         </thead>
         <tbody>
-            <?php 
-            // Reset the result pointer to the beginning
-            mysqli_data_seek($result, 0);
-            
-            if (mysqli_num_rows($result) > 0): 
-                while ($row = mysqli_fetch_assoc($result)): 
-                    // Get common variables
-                    $batch_id = isset($row['dataset_batch_id']) ? $row['dataset_batch_id'] : null;
-                    $analytics = function_exists('get_batch_analytics') ? get_batch_analytics($conn, $batch_id) : ['total_views' => 0, 'total_downloads' => 0];
-                    $is_private_unowned = isset($row['visibility']) && isset($row['user_id']) ? 
-                        ($row['visibility'] == 'Private' && $row['user_id'] != $_SESSION['user_id']) : false;
-                    
-                    // Handle different naming conventions between files
-                    $dataset_id = isset($row['dataset_id']) ? $row['dataset_id'] : null;
-                    $title = isset($row['title']) ? $row['title'] : (isset($row['dataset_title']) ? $row['dataset_title'] : '');
-                    $description = isset($row['description']) ? fixNewlines($row['description']) : (isset($row['dataset_description']) ? fixNewlines($row['dataset_description']) : '');
-                    $category_name = isset($row['category_name']) ? $row['category_name'] : '';
-                    $upvotes = isset($row['upvotes']) ? $row['upvotes'] : 0;
-                    $user_upvoted = isset($row['user_upvoted']) ? $row['user_upvoted'] : 0;
-                    
-                    // Determine detail page URL
-                    $detail_page = isset($is_my_datasets) && $is_my_datasets ? 'mydataset.php' : 'dataset.php';
-            ?>
-                <tr>
-                    <td>
-                        <a href="<?= $detail_page ?>?id=<?= $dataset_id ?>&title=<?= urlencode($title) ?>" title="<?= htmlspecialchars($title) ?>">
-                            <?= htmlspecialchars($title) ?>
-                        </a>
-                        <?php if(isset($row['visibility'])): ?>
-                        <span class="visibility-badge <?= strtolower($row['visibility']) ?>">
-                            <?= $row['visibility'] ?>
-                        </span>
-                        <?php endif; ?>
-                    </td>
-                    <td>
-                        <?php if (!empty($category_name)): ?>
-                            <span class="category-badge">
-                                <?= htmlspecialchars($category_name) ?>
+            <?php if (!empty($datasets)): ?>
+                <?php foreach ($datasets as $row): ?>
+                    <?php
+                        // Get common variables
+                        $batch_id = isset($row['dataset_batch_id']) ? $row['dataset_batch_id'] : null;
+                        $analytics = ['total_views' => $row['total_views'], 'total_downloads' => $row['total_downloads']];
+                        $is_private_unowned = isset($row['visibility']) && isset($row['user_id']) ? 
+                            ($row['visibility'] == 'Private' && $row['user_id'] != $_SESSION['user_id']) : false;
+                        
+                        // Handle different naming conventions between files
+                        $dataset_id = isset($row['dataset_id']) ? $row['dataset_id'] : null;
+                        $title = isset($row['title']) ? $row['title'] : (isset($row['dataset_title']) ? $row['dataset_title'] : '');
+                        $description = isset($row['description']) ? fixNewlines($row['description']) : (isset($row['dataset_description']) ? fixNewlines($row['dataset_description']) : '');
+                        $category_name = isset($row['category_name']) ? $row['category_name'] : '';
+                        $upvotes = isset($row['upvotes']) ? $row['upvotes'] : 0;
+                        $user_upvoted = isset($row['user_upvoted']) ? $row['user_upvoted'] : 0;
+                        
+                        // Determine detail page URL
+                        $detail_page = isset($is_my_datasets) && $is_my_datasets ? 'mydataset.php' : 'dataset.php';
+                    ?>
+                    <tr>
+                        <td>
+                            <a href="<?= $detail_page ?>?id=<?= $dataset_id ?>&title=<?= urlencode($title) ?>" title="<?= htmlspecialchars($title) ?>">
+                                <?= htmlspecialchars($title) ?>
+                            </a>
+                            <?php if(isset($row['visibility'])): ?>
+                            <span class="visibility-badge <?= strtolower($row['visibility']) ?>">
+                                <?= $row['visibility'] ?>
                             </span>
-                        <?php else: ?>
-                            <span class="category-badge">Uncategorized</span>
-                        <?php endif; ?>
-                    </td>
-                    <td>
-                        <div class="table-analytics">
-                            <span class="analytics-item" title="Views">
-                                <i class="fa-regular fa-eye"></i> <?= $analytics['total_views'] ?>
-                            </span>
-                            <span class="analytics-item" title="Downloads">
-                                <i class="fa-solid fa-download"></i> <?= $analytics['total_downloads'] ?>
-                            </span>
-                            <span class="analytics-item" title="Upvotes">
-                                <i class="fa-solid fa-arrow-up"></i> <?= $upvotes ?>
-                            </span>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="table-actions">
-                            <div class="table-download">
-                                <?php 
-                                    $has_access = function_exists('hasApprovedAccess') ? hasApprovedAccess($conn, $dataset_id, $_SESSION['user_id']) : false;
-                                    if (!$is_private_unowned || $has_access): 
-                                ?>
-                                    <a href="download_batch.php?batch_id=<?= $batch_id ?>" class="download-btn">Download</a>
-                                <?php else: ?>
-                                    <span class="download-btn private-btn" style="background-color: #ccc; cursor: not-allowed;">Private</span>
+                            <?php endif; ?>
+                            <div class="dataset-uploader" style="margin-top: 5px; font-size: 0.85em;">
+                                <span class="uploader-name"><?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) ?></span>
+                                <?php if(isset($row['created_at'])): ?>
+                                <span class="upload-date">
+                                    <i class="fa-regular fa-calendar"></i> 
+                                    <?= date('M d, Y', strtotime($row['created_at'])) ?>
+                                </span>
                                 <?php endif; ?>
                             </div>
-                            <?php if (isset($is_my_datasets) && $is_my_datasets): ?>
-                            <a href="edit_dataset.php?id=<?= $dataset_id ?>" class="edit-btn">Edit</a>
+                        </td>
+                        <td>
+                            <?php if (!empty($category_name)): ?>
+                                <span class="category-badge">
+                                    <?= htmlspecialchars($category_name) ?>
+                                </span>
+                            <?php else: ?>
+                                <span class="category-badge">Uncategorized</span>
                             <?php endif; ?>
-                            <div class="table-upvote" data-id="<?= $dataset_id ?>">
-                                <button class="<?= $user_upvoted == 1 ? 'upvoted' : '' ?>" onclick="upvoteDataset(<?= $dataset_id ?>)">
-                                    <?= $user_upvoted == 1 ? '⬆ Upvoted' : '⬆ Upvote' ?>
-                                </button>
-                                <span class="table-upvote-count"><?= $upvotes ?></span>
+                        </td>
+                        <td>
+                            <div class="table-analytics">
+                                <span class="analytics-item" title="Views">
+                                    <i class="fa-regular fa-eye"></i> <?= $analytics['total_views'] ?>
+                                </span>
+                                <span class="analytics-item" title="Downloads">
+                                    <i class="fa-solid fa-download"></i> <?= $analytics['total_downloads'] ?>
+                                </span>
+                                <span class="analytics-item" title="Upvotes">
+                                    <i class="fa-solid fa-arrow-up"></i> <?= $upvotes ?>
+                                </span>
                             </div>
-                        </div>
-                    </td>
-                </tr>
-            <?php 
-                endwhile; 
-            endif; 
-            ?>
+                        </td>
+                        <td>
+                            <div class="table-actions">
+                                <div class="table-download">
+                                    <?php 
+                                        $has_access = function_exists('hasApprovedAccess') ? hasApprovedAccess($conn, $dataset_id, $_SESSION['user_id']) : false;
+                                        if (!$is_private_unowned || $has_access): 
+                                    ?>
+                                        <a href="download_batch.php?batch_id=<?= $batch_id ?>" class="download-btn">Download</a>
+                                    <?php else: ?>
+                                        <span class="download-btn private-btn" style="background-color: #ccc; cursor: not-allowed;">Private</span>
+                                    <?php endif; ?>
+                                </div>
+                                <?php if (isset($is_my_datasets) && $is_my_datasets): ?>
+                                <a href="edit_dataset.php?id=<?= $dataset_id ?>" class="edit-btn">Edit</a>
+                                <?php endif; ?>
+                                <div class="table-upvote" data-id="<?= $dataset_id ?>">
+                                    <button class="<?= $user_upvoted == 1 ? 'upvoted' : '' ?>" onclick="upvoteDataset(<?= $dataset_id ?>)">
+                                        <?= $user_upvoted == 1 ? '⬆ Upvoted' : '⬆ Upvote' ?>
+                                    </button>
+                                    <span class="table-upvote-count"><?= $upvotes ?></span>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            <?php endif; ?>
         </tbody>
     </table>
 </div>
 
 <!-- No datasets found message outside of the grid -->
-<?php if (mysqli_num_rows($result) == 0): ?>
+<?php if (empty($datasets)): ?>
     <div class="no-datasets">
         <img src="images/no-found1.png" alt="No data" class="no-found-img">
         <p>No dataset found.</p>
     </div>
 <?php endif; ?> 
+
+<script>
+    function updateSort(sortValue) {
+        // Get current URL
+        let currentUrl = new URL(window.location.href);
+        
+        // Update or add the sort parameter
+        currentUrl.searchParams.set('sort', sortValue);
+        
+        // Redirect to the new URL
+        window.location.href = currentUrl.toString();
+    }
+</script> 

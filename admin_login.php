@@ -85,9 +85,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <title>Admin Login</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/error_styles.css">
+    <?php include 'includes/background_styles.php'; ?>
     <style>
         body {
-            background: url('images/Mindanao.png');
             background-size: cover;
             background-attachment: fixed;
             height: 100vh;

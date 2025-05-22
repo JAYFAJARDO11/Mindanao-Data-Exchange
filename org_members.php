@@ -191,6 +191,7 @@ $members_result = $members_stmt->get_result();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Organization Members - <?php echo htmlspecialchars($organization_name); ?></title>
+    <?php include 'includes/background_styles.php'; ?>
     <style>
         body {
             margin: 0;
@@ -355,15 +356,6 @@ $members_result = $members_stmt->get_result();
             background-color: #e9ecef;
             object-fit: cover;
         }
-        #background-video {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: -1;
-        }
         .modal {
             display: none;
             position: fixed;
@@ -408,9 +400,6 @@ $members_result = $members_stmt->get_result();
     </style>
 </head>
 <body>
-    <video autoplay muted loop id="background-video">
-        <source src="videos/bg6.mp4" type="video/mp4">
-    </video>
     
     <header class="navbar">
         <div class="logo">
