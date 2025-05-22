@@ -362,6 +362,9 @@ $resourcesResult = mysqli_stmt_get_result($stmt);
             margin: 0;
             font-size: 22px;
             white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 630px;
         }
         .nav-links {
             display: flex;
@@ -473,10 +476,11 @@ $resourcesResult = mysqli_stmt_get_result($stmt);
             
             .logo h2 {
                 margin: 0;
-                font-size: 22px;
-                white-space: nowrap;
+                font-size: 18px;
+                text-align: center;
                 overflow: hidden;
                 text-overflow: ellipsis;
+                max-width: 300px;
             }
             
             .nav-links {
@@ -563,6 +567,9 @@ $resourcesResult = mysqli_stmt_get_result($stmt);
       font-weight: 700;
       margin: 0;
       text-transform: uppercase;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      max-width: 100%;
     }
 
     .title-section {
@@ -639,6 +646,10 @@ $resourcesResult = mysqli_stmt_get_result($stmt);
     .file-item a {
       color: #333;
       text-decoration: none;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
     }
 
     .file-item a:hover {
@@ -650,6 +661,7 @@ $resourcesResult = mysqli_stmt_get_result($stmt);
       margin-left: auto;
       color: #777;
       font-size: 0.9em;
+      flex-shrink: 0;
     }
 
     .action-buttons {
@@ -1158,15 +1170,70 @@ $resourcesResult = mysqli_stmt_get_result($stmt);
     .file-item {
       display: flex;
       align-items: center;
-      padding: 10px 15px;
+      margin-bottom: 12px;
       background: #fff;
-      margin: 8px 0;
-      border-radius: 8px;
-      border: 1px solid #e9ecef;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-      transition: transform 0.2s;
+      padding: 10px 12px;
+      border-radius: 6px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+
+    .file-item i {
+      margin-right: 10px;
+      color: #007BFF;
+    }
+
+    .file-item a {
+      color: #333;
+      text-decoration: none;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+    }
+
+    .file-item a:hover {
+      text-decoration: underline;
+      color: #007BFF;
+    }
+
+    .file-item .file-size {
+      margin-left: auto;
+      color: #777;
+      font-size: 0.9em;
+      flex-shrink: 0;
     }
     
+    /* Resource item styles for better display of long filenames */
+    .resource-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #ffffff;
+      border: 1px solid #ddd;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      margin-bottom: 10px;
+    }
+    
+    .resource-name {
+      flex: 1;
+      min-width: 0;
+      margin-right: 15px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .resource-name a, .resource-name span {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .resource-action {
+      flex-shrink: 0;
+    }
+
     /* Version notes styling */
     .version-notes {
       background-color: #f0f7ff;
@@ -1254,6 +1321,9 @@ $resourcesResult = mysqli_stmt_get_result($stmt);
       margin-top: 10px;
       color: #212529;
       line-height: 1.5;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      max-width: 100%;
     }
     
     .no-comments {
@@ -1471,6 +1541,12 @@ $resourcesResult = mysqli_stmt_get_result($stmt);
 </head>
 <body>
 
+<?php if (isset($_GET['updated']) && $_GET['updated'] == '1'): ?>
+<div class="notification" id="mydataset_updateMessage">
+    <i class="fas fa-check-circle"></i> Dataset updated successfully
+</div>
+<?php endif; ?>
+
 <?php if (isset($_GET['switched']) && $_GET['switched'] == '1'): ?>
 <div class="notification" id="mydataset_versionMessage">
     <i class="fas fa-check-circle"></i> Version switched successfully
@@ -1500,6 +1576,21 @@ $resourcesResult = mysqli_stmt_get_result($stmt);
 <script>
 // Success Message Animation
 document.addEventListener('DOMContentLoaded', function() {
+    // Handle update message
+    const updateMessage = document.getElementById('mydataset_updateMessage');
+    if (updateMessage) {
+        setTimeout(() => {
+            updateMessage.classList.add('show');
+        }, 100);
+        
+        setTimeout(() => {
+            updateMessage.classList.add('hide');
+            setTimeout(() => {
+                updateMessage.remove();
+            }, 300);
+        }, 3000);
+    }
+    
     // Handle version message
     const versionMessage = document.getElementById('mydataset_versionMessage');
     if (versionMessage) {
@@ -1615,22 +1706,22 @@ document.addEventListener('DOMContentLoaded', function() {
     </header>
     
   <div class="container">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-      <div>
-        <h2>
+    <div style="display: flex; flex-direction: column; gap: 15px;">
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 15px;">
+        <h2 style="word-wrap: break-word; overflow-wrap: break-word; max-width: 80%; margin: 0;">
           <?php echo htmlspecialchars($dataset['title']); ?>
           <?php if (isset($currentVersion)): ?>
           <span class="version-indicator"><?php echo htmlspecialchars($currentVersion['version_number']); ?></span>
           <?php endif; ?>
         </h2>
+        <?php if ($dataset['user_id'] == $user_id): ?>
+        <div>
+            <button id="editDatasetBtn" onclick="openEditModal()" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Edit Dataset
+            </button>
+        </div>
+        <?php endif; ?>
       </div>
-      <?php if ($dataset['user_id'] == $user_id): ?>
-      <div>
-          <button id="editDatasetBtn" onclick="openEditModal()" class="btn btn-primary">
-              <i class="fas fa-edit"></i> Edit Dataset
-          </button>
-      </div>
-      <?php endif; ?>
     </div>
     
     <!-- Version tabs -->
@@ -1765,8 +1856,8 @@ document.addEventListener('DOMContentLoaded', function() {
               <?php
               // Display main dataset file
               while ($ds = mysqli_fetch_assoc($resourcesResult)): ?>
-              <div style="background: #ffffff; border: 1px solid #ddd; padding: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center;">
-                <div>
+              <div class="resource-item">
+                <div class="resource-name">
                   <?php if (!isset($dataset['visibility']) || $dataset['visibility'] == 'Public' || $dataset['user_id'] == $user_id): ?>
                   <a href="download.php?dataset_id=<?php echo $ds['dataset_id']; ?>" style="color: #007BFF; text-decoration: none;">
                     <?php echo !empty($ds['file_path']) ? basename($ds['file_path']) : 'No file uploaded'; ?>
@@ -1778,9 +1869,9 @@ document.addEventListener('DOMContentLoaded', function() {
                   <?php endif; ?>
                 </div>
                 <?php if (!isset($dataset['visibility']) || $dataset['visibility'] == 'Public' || $dataset['user_id'] == $user_id): ?>
-                  <a href="download.php?dataset_id=<?php echo $ds['dataset_id']; ?>" class="download-btn">⬇️ Download</a>
+                  <a href="download.php?dataset_id=<?php echo $ds['dataset_id']; ?>" class="download-btn resource-action">⬇️ Download</a>
                 <?php else: ?>
-                  <span class="download-btn" style="background-color: #ccc; cursor: not-allowed;">⬇️ Private</span>
+                  <span class="download-btn resource-action" style="background-color: #ccc; cursor: not-allowed;">⬇️ Private</span>
                 <?php endif; ?>
               </div>
               <?php endwhile; ?>
@@ -1788,8 +1879,8 @@ document.addEventListener('DOMContentLoaded', function() {
               <?php 
               // Display additional files
               foreach ($additionalFiles as $addFile): ?>
-              <div style="background: #ffffff; border: 1px solid #ddd; padding: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center;">
-                <div>
+              <div class="resource-item">
+                <div class="resource-name">
                   <?php if (!isset($dataset['visibility']) || $dataset['visibility'] == 'Public' || $dataset['user_id'] == $user_id): ?>
                   <a href="download.php?direct_file=<?php echo urlencode($addFile['file_path']); ?>" style="color: #007BFF; text-decoration: none;">
                     <?php echo htmlspecialchars(basename($addFile['file_path'])); ?>
@@ -1801,9 +1892,9 @@ document.addEventListener('DOMContentLoaded', function() {
                   <?php endif; ?>
                 </div>
                 <?php if (!isset($dataset['visibility']) || $dataset['visibility'] == 'Public' || $dataset['user_id'] == $user_id): ?>
-                  <a href="download.php?direct_file=<?php echo urlencode($addFile['file_path']); ?>" class="download-btn">⬇️ Download</a>
+                  <a href="download.php?direct_file=<?php echo urlencode($addFile['file_path']); ?>" class="download-btn resource-action">⬇️ Download</a>
                 <?php else: ?>
-                  <span class="download-btn" style="background-color: #ccc; cursor: not-allowed;">⬇️ Private</span>
+                  <span class="download-btn resource-action" style="background-color: #ccc; cursor: not-allowed;">⬇️ Private</span>
                 <?php endif; ?>
               </div>
               <?php endforeach; ?>

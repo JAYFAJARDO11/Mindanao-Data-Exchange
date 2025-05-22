@@ -19,6 +19,23 @@ if (!isset($_SESSION['first_name'])) {
     }
 }
 
+// Check if user is also an admin
+$is_user_admin = false;
+if (isset($_SESSION['user_id'])) {
+    include_once 'db_connection.php';
+    $user_id = $_SESSION['user_id'];
+    
+    // Check if user has admin role in the users table
+    $adminSql = "SELECT role FROM users WHERE user_id = ? AND role = 'admin'";
+    $stmt = $conn->prepare($adminSql);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $adminResult = $stmt->get_result();
+    if ($adminResult->num_rows > 0) {
+        $is_user_admin = true;
+    }
+}
+
 // Get count of pending access requests for this user
 $request_count = 0;
 if (isset($_SESSION['user_id'])) {
@@ -125,6 +142,30 @@ $total_count = $request_count + $notif_count;
         width: 20px;
         height: 20px;
         margin-right: 10px;
+    }
+
+    .admin-link {
+        background-color: rgba(12, 26, 54, 0.6);
+        color: #ffffff;
+        margin-top: 5px;
+        margin-bottom: 5px;
+        position: relative;
+    }
+    
+    .admin-link:hover {
+        background-color: rgba(12, 26, 54, 0.9);
+        color: #ffffff;
+    }
+    
+    .admin-badge {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #cfd9ff;
+        font-size: 10px;
+        font-weight: normal;
+        opacity: 0.8;
     }
 
     .sign-out {
@@ -245,6 +286,13 @@ $total_count = $request_count + $notif_count;
             <?php endif; ?>
         </a>
     </div>
+    
+    <?php if ($is_user_admin): ?>
+    <a href="admin_dashboard.php" class="menu-item admin-link">
+        <i class="fa-solid fa-shield"></i>
+        <span>Admin</span>
+    </a>
+    <?php endif; ?>
     
     <a href="logout.php" class="sign-out">
         <img src="images/signout-icon.png" alt="Sign Out">

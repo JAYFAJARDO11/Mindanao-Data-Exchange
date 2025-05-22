@@ -66,7 +66,40 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 handle_error("Invalid email or password", ERROR_AUTH, "admin_login.php");
             }
         } else {
-            handle_error("Invalid email or password", ERROR_AUTH, "admin_login.php");
+            // If not found in administrator table, check users table for admin role
+            $user_sql = "SELECT * FROM users WHERE email = ? AND role = 'admin'";
+            $user_stmt = $conn->prepare($user_sql);
+            
+            if (!$user_stmt) {
+                handle_db_error("Database error occurred", $conn, "admin_login.php");
+            }
+            
+            $user_stmt->bind_param("s", $email);
+            $user_stmt->execute();
+            $user_result = $user_stmt->get_result();
+            
+            if ($user_result->num_rows > 0) {
+                $user = $user_result->fetch_assoc();
+                
+                // Verify password
+                if (password_verify($password, $user['password'])) {
+                    // Set session variables - use user data for admin session
+                    $_SESSION['admin_id'] = $user['user_id'];
+                    $_SESSION['admin_name'] = $user['first_name'] . ' ' . $user['last_name'];
+                    $_SESSION['admin_from_user'] = true; // Flag to indicate admin is from users table
+                    
+                    // Log successful login
+                    log_error("User with admin role logged in as admin", "auth", ['user_id' => $user['user_id'], 'email' => $email]);
+                    
+                    // Redirect to admin dashboard
+                    header("Location: admin_dashboard.php");
+                    exit();
+                } else {
+                    handle_error("Invalid email or password", ERROR_AUTH, "admin_login.php");
+                }
+            } else {
+                handle_error("Invalid email or password", ERROR_AUTH, "admin_login.php");
+            }
         }
     } catch (Exception $e) {
         log_error("Admin login error", ERROR_GENERAL, [

@@ -240,9 +240,9 @@ try {
     $return_to = isset($_POST['return_to']) ? $_POST['return_to'] : 'dataset.php';
     
     if ($return_to === 'mydataset.php') {
-        header("Location: mydataset.php?id=$dataset_id");
+        header("Location: mydataset.php?id=$dataset_id&updated=1");
     } else {
-        header("Location: dataset.php?id=$dataset_id");
+        header("Location: dataset.php?id=$dataset_id&updated=1");
     }
     exit();
 

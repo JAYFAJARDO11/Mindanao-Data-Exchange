@@ -98,6 +98,7 @@ if ($search) {
         WHERE 
             (u.first_name LIKE '%$search%'
             OR u.last_name LIKE '%$search%'
+            OR CONCAT(u.first_name, ' ', u.last_name) LIKE '%$search%'
             OR o.name LIKE '%$search%'
             OR d.title LIKE '%$search%'
             OR d.description LIKE '%$search%'

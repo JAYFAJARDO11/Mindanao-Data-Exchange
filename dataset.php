@@ -578,6 +578,9 @@ $analytics = get_batch_analytics($conn, $batch_id);
         margin: 0;
         font-size: 22px;
         white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 630px;
     }
     
     .nav-links {
@@ -696,6 +699,7 @@ $analytics = get_batch_analytics($conn, $batch_id);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            max-width: 300px;
         }
         
         .nav-links {
@@ -834,6 +838,9 @@ $analytics = get_batch_analytics($conn, $batch_id);
       font-weight: 700;
       margin: 0;
       text-transform: uppercase;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      max-width: 100%;
     }
 
     .title-section {
@@ -914,6 +921,10 @@ $analytics = get_batch_analytics($conn, $batch_id);
     .file-item a {
       color: #333;
       text-decoration: none;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
     }
 
     .file-item a:hover {
@@ -925,6 +936,7 @@ $analytics = get_batch_analytics($conn, $batch_id);
       margin-left: auto;
       color: #777;
       font-size: 0.9em;
+      flex-shrink: 0;
     }
 
     .action-buttons {
@@ -1608,6 +1620,9 @@ $analytics = get_batch_analytics($conn, $batch_id);
       margin-top: 10px;
       color: #212529;
       line-height: 1.5;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      max-width: 100%;
     }
     
     .no-comments {
@@ -2022,10 +2037,48 @@ $analytics = get_batch_analytics($conn, $batch_id);
             padding-bottom: 10px;
         }
     }
+
+    /* Resource item styles for better display of long filenames */
+    .resource-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #ffffff;
+      border: 1px solid #ddd;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      margin-bottom: 10px;
+    }
+    
+    .resource-name {
+      flex: 1;
+      min-width: 0;
+      margin-right: 15px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    .resource-name a, .resource-name span {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .resource-action {
+      flex-shrink: 0;
+    }
   </style>
 </head>
 <body>
   
+<?php if (isset($_GET['updated']) && $_GET['updated'] == '1'): ?>
+<div class="notification" id="dataset_updateMessage">
+    <i class="fas fa-check-circle"></i> Dataset updated successfully
+</div>
+<?php endif; ?>
+
 <?php if (isset($_SESSION['request_message'])): ?>
 <div class="notification request" id="requestMessage">
     <i class="fas fa-bell"></i> <?php echo $_SESSION['request_message']; ?>
@@ -2048,6 +2101,21 @@ $analytics = get_batch_analytics($conn, $batch_id);
 <script>
 // Success Message Animation
 document.addEventListener('DOMContentLoaded', function() {
+    // Handle update message
+    const updateMessage = document.getElementById('dataset_updateMessage');
+    if (updateMessage) {
+        setTimeout(() => {
+            updateMessage.classList.add('show');
+        }, 100);
+        
+        setTimeout(() => {
+            updateMessage.classList.add('hide');
+            setTimeout(() => {
+                updateMessage.remove();
+            }, 300);
+        }, 3000);
+    }
+    
     // Handle request message
     const requestMessage = document.getElementById('requestMessage');
     if (requestMessage) {
@@ -2148,9 +2216,9 @@ document.addEventListener('DOMContentLoaded', function() {
     </header>
 
   <div class="container">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-      <div>
-        <h2>
+    <div style="display: flex; flex-direction: column; gap: 15px;">
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 15px;">
+        <h2 style="word-wrap: break-word; overflow-wrap: break-word; max-width: 80%; margin: 0;">
           <?php echo htmlspecialchars($dataset['title']); ?>
           <?php if (isset($currentVersion)): ?>
           <span class="version-indicator"><?php echo htmlspecialchars($currentVersion['version_number']); ?></span>
@@ -2159,13 +2227,32 @@ document.addEventListener('DOMContentLoaded', function() {
             <?= $dataset['visibility'] ?>
           </span>
         </h2>
+        <?php if ($dataset['user_id'] == $user_id): ?>
+        <div>
+            <button id="editDatasetBtn" onclick="openEditModal()" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Edit Dataset
+            </button>
+        </div>
+        <?php endif; ?>
       </div>
-      <?php if ($dataset['user_id'] == $user_id): ?>
-      <div>
-          <button id="editDatasetBtn" onclick="openEditModal()" class="btn btn-primary">
-              <i class="fas fa-edit"></i> Edit Dataset
-          </button>
-      </div>
+      <?php if ($is_private_unowned): ?>
+        <?php if ($has_approved_access): ?>
+          <div style="margin-top: 10px; font-size: 14px; color: #d4edda;">
+            Your access request was approved. You can download this private dataset.
+          </div>
+        <?php elseif ($has_requested_access): ?>
+          <div style="margin-top: 10px; font-size: 14px; color: #fff3cd;">
+            Your access request is pending. You'll be notified when it's approved.
+          </div>
+        <?php elseif ($has_rejected_access): ?>
+          <div style="margin-top: 10px; font-size: 14px; color: #ffcccc;">
+            Your previous request was rejected. You may submit a new request.
+          </div>
+        <?php else: ?>
+          <div style="margin-top: 10px; font-size: 14px; color: #ffcccc;">
+            Note: This is a private dataset. Request access to download it.
+          </div>
+        <?php endif; ?>
       <?php endif; ?>
     </div>
     
@@ -2200,25 +2287,6 @@ document.addEventListener('DOMContentLoaded', function() {
           <?= $dataset['visibility'] ?>
         </span>
       </h1>
-      <?php if ($is_private_unowned): ?>
-        <?php if ($has_approved_access): ?>
-          <div style="margin-top: 10px; font-size: 14px; color: #d4edda;">
-            Your access request was approved. You can download this private dataset.
-          </div>
-        <?php elseif ($has_requested_access): ?>
-          <div style="margin-top: 10px; font-size: 14px; color: #fff3cd;">
-            Your access request is pending. You'll be notified when it's approved.
-          </div>
-        <?php elseif ($has_rejected_access): ?>
-          <div style="margin-top: 10px; font-size: 14px; color: #ffcccc;">
-            Your previous request was rejected. You may submit a new request.
-          </div>
-        <?php else: ?>
-          <div style="margin-top: 10px; font-size: 14px; color: #ffcccc;">
-            Note: This is a private dataset. Request access to download it.
-          </div>
-        <?php endif; ?>
-      <?php endif; ?>
         </div>
     </div>
     
@@ -2347,8 +2415,8 @@ document.addEventListener('DOMContentLoaded', function() {
         <?php if ($resourcesResult && mysqli_num_rows($resourcesResult) > 0): ?>
           <div class="resources-scrollable" style="display: flex; flex-direction: column; gap: 10px;">
             <?php while ($ds = mysqli_fetch_assoc($resourcesResult)): ?>
-              <div style="background: #ffffff; border: 1px solid #ddd; padding: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center;">
-                <div>
+              <div class="resource-item">
+                <div class="resource-name">
                   <?php if ($dataset['visibility'] == 'Public' || $dataset['user_id'] == $_SESSION['user_id'] || $has_approved_access): ?>
                   <a href="download.php?dataset_id=<?php echo $ds['dataset_id']; ?>" style="color: #007BFF; text-decoration: none;">
                     <?php echo htmlspecialchars(basename($ds['file_path'])); ?>
@@ -2360,16 +2428,16 @@ document.addEventListener('DOMContentLoaded', function() {
                   <?php endif; ?>
                 </div>
                 <?php if ($dataset['visibility'] == 'Public' || $dataset['user_id'] == $_SESSION['user_id'] || $has_approved_access): ?>
-                  <a href="download.php?dataset_id=<?php echo $ds['dataset_id']; ?>" class="download-btn">⬇️ Download</a>              
+                  <a href="download.php?dataset_id=<?php echo $ds['dataset_id']; ?>" class="download-btn resource-action">⬇️ Download</a>              
                 <?php else: ?>
-                  <span class="download-btn" style="background-color: #ccc; cursor: not-allowed;">⬇️ Private</span>
+                  <span class="download-btn resource-action" style="background-color: #ccc; cursor: not-allowed;">⬇️ Private</span>
                 <?php endif; ?>
               </div>
             <?php endwhile; ?>
             
             <?php foreach ($additionalFiles as $addFile): ?>
-              <div style="background: #ffffff; border: 1px solid #ddd; padding: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center;">
-                <div>
+              <div class="resource-item">
+                <div class="resource-name">
                   <?php if ($dataset['visibility'] == 'Public' || $dataset['user_id'] == $_SESSION['user_id'] || $has_approved_access): ?>
                   <a href="download.php?direct_file=<?php echo urlencode($addFile['file_path']); ?>" style="color: #007BFF; text-decoration: none;">
                     <?php echo htmlspecialchars(basename($addFile['file_path'])); ?>
@@ -2381,9 +2449,9 @@ document.addEventListener('DOMContentLoaded', function() {
                   <?php endif; ?>
                 </div>
                 <?php if ($dataset['visibility'] == 'Public' || $dataset['user_id'] == $_SESSION['user_id'] || $has_approved_access): ?>
-                  <a href="download.php?direct_file=<?php echo urlencode($addFile['file_path']); ?>" class="download-btn">⬇️ Download</a>              
+                  <a href="download.php?direct_file=<?php echo urlencode($addFile['file_path']); ?>" class="download-btn resource-action">⬇️ Download</a>              
                 <?php else: ?>
-                  <span class="download-btn" style="background-color: #ccc; cursor: not-allowed;">⬇️ Private</span>
+                  <span class="download-btn resource-action" style="background-color: #ccc; cursor: not-allowed;">⬇️ Private</span>
                 <?php endif; ?>
               </div>
             <?php endforeach; ?>

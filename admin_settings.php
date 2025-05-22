@@ -152,6 +152,7 @@ $settings = [
             <a class="nav-link" href="admin_org_requests.php"><i class="fas fa-clipboard-list"></i> Org Requests</a>
             <a class="nav-link" href="admin_notifications.php"><i class="fas fa-bell"></i> Notifications</a>
             <a class="nav-link active" href="#"><i class="fas fa-cog"></i> Settings</a>
+            <a class="nav-link" href="admin_to_main.php"><i class="fas fa-globe"></i> Main Site</a>
             <a class="nav-link" href="admin_logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </nav>
     </div>
