@@ -301,6 +301,7 @@ if (isset($_SESSION['user_id'])) {
 
         <nav class="mdx-nav-links" id="nav-links">
             <a href="mindanaodataexchange.php">Home</a>
+            <a href="login.php">Login</a>
         </nav>
     </header>
 

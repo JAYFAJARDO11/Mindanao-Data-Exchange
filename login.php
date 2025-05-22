@@ -99,6 +99,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <title>Login - MDX</title>
     <link rel="stylesheet" href="assets/css/error_styles.css">
     <link rel="stylesheet" href="assets/css/login_responsive.css">
+    <!-- Add Font Awesome for the menu icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <?php include 'includes/background_styles.php'; ?>
     <style>
         body {
@@ -172,6 +174,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             padding: 0 !important;
             margin-right: 15px !important;
             z-index: 1001 !important;
+            padding-left: 18px !important;
+            padding-bottom: 2px !important;
         }
         
         /* Responsive styles for the navbar */
@@ -181,15 +185,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 border-radius: 15px !important;
                 width: 90% !important;
                 max-width: 90% !important;
+                position: relative !important;
             }
             
             .mdx-menu-toggle {
-                display: block !important;
+                display: flex !important;
                 position: absolute !important;
                 right: 15px !important;
                 top: 50% !important;
                 transform: translateY(-50%) !important;
                 z-index: 1002 !important;
+                align-items: center !important;
+                justify-content: center !important;
+                width: 40px !important;
+                height: 40px !important;
             }
             
             .mdx-logo img {
@@ -435,19 +444,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (mobileMenuToggle && navLinks) {
                 mobileMenuToggle.addEventListener('click', function(e) {
                     e.stopPropagation(); // Prevent event from bubbling up
+                    e.preventDefault(); // Prevent default behavior
                     navLinks.classList.toggle('active');
                 });
             }
             
             // Close menu when clicking outside
             document.addEventListener('click', function(event) {
-                const isClickInsideNavbar = event.target.closest('.mdx-navbar-new');
-                if (!isClickInsideNavbar && navLinks && navLinks.classList.contains('active')) {
-                    navLinks.classList.remove('active');
+                // Only handle clicks outside the toggle button itself
+                if (!event.target.closest('#mobile-menu-toggle')) {
+                    const isClickInsideNavbar = event.target.closest('.mdx-navbar-new');
+                    if (!isClickInsideNavbar && navLinks && navLinks.classList.contains('active')) {
+                        navLinks.classList.remove('active');
+                    }
                 }
             });
         });
-</script>
+    </script>
 
 </body>
 </html>
