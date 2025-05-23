@@ -52,6 +52,18 @@ $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
 
+// Get user's profile picture
+$profile_picture = $user['profile_picture'] ?? 'images/avatarIconunknown.jpg';
+// If profile_picture doesn't include the path, add it
+if (strpos($profile_picture, 'images/') === false) {
+    // Check if it's one of the numbered profile pictures (1.png through 6.png)
+    if (in_array($profile_picture, ['1.png', '2.png', '3.png', '4.png', '5.png', '6.png'])) {
+        $profile_picture = 'images/profile-pics/' . $profile_picture;
+    } else {
+        $profile_picture = 'images/' . $profile_picture;
+    }
+}
+
 // Check for pending organization membership requests
 $pending_request_sql = "SELECT omr.*, o.name as organization_name, omr.expiration_date
                       FROM organization_membership_requests omr
@@ -432,7 +444,6 @@ $hasOrganization = !empty($organizationId);
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.7);
-            display: flex;
             align-items: center;
             justify-content: center;
             z-index: 1000;
@@ -562,6 +573,64 @@ $hasOrganization = !empty($organizationId);
             width: 60px;
             height: 60px;
             border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        #avatar:hover {
+            transform: scale(1.05);
+            border-color: #0099ff;
+            box-shadow: 0 0 10px rgba(0, 153, 255, 0.3);
+        }
+        
+        #avatar-container {
+            position: relative;
+            width: 60px;
+            height: 60px;
+        }
+        
+        .avatar-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            cursor: pointer;
+        }
+        
+        #avatar-container:hover .avatar-overlay {
+            opacity: 1;
+        }
+        
+        .avatar-overlay i {
+            font-size: 20px;
+        }
+        
+        .change-pic-btn {
+            background-color: #0099ff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 10px;
+            display: block;
+            width: fit-content;
+        }
+        
+        .change-pic-btn:hover {
+            background-color: #007acc;
         }
 
         #header #first_name, #header #last_name {
@@ -1052,6 +1121,164 @@ $hasOrganization = !empty($organizationId);
         #org-label {
             padding-left: 0;
         }
+
+        /* Profile Picture Modal Styles */
+        .profile-pic-modal-content {
+            width: 90%;
+            max-width: 600px;
+            padding: 30px;
+            border-radius: 10px;
+            background-color: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .profile-pic-modal-content h3 {
+            margin-top: 0;
+            color: #0099ff;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 22px;
+        }
+        
+        .profile-pic-modal-content h3 i {
+            margin-right: 8px;
+        }
+        
+        .modal-subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .profile-pic-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .profile-pic-option {
+            cursor: pointer;
+            border: 3px solid transparent;
+            border-radius: 50%;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            width: 100px;
+            height: 100px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .profile-pic-option:hover {
+            transform: scale(1.05);
+            border-color: #0099ff;
+        }
+        
+        .profile-pic-option.selected {
+            border-color: #0099ff;
+            box-shadow: 0 0 10px rgba(0, 153, 255, 0.5);
+        }
+        
+        .profile-pic-option img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+        
+        .pic-select-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 153, 255, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border-radius: 50%;
+        }
+        
+        .profile-pic-option.selected .pic-select-overlay {
+            opacity: 1;
+        }
+        
+        .pic-select-overlay i {
+            color: white;
+            font-size: 30px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .save-btn, .cancel-btn {
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .save-btn {
+            background-color: #0099ff;
+            color: white;
+            border: none;
+        }
+        
+        .save-btn:hover {
+            background-color: #007acc;
+        }
+        
+        .cancel-btn {
+            background-color: #f2f2f2;
+            color: #333;
+            border: 1px solid #ccc;
+        }
+        
+        .cancel-btn:hover {
+            background-color: #e6e6e6;
+        }
+        
+        .change-pic-btn {
+            background-color: #0099ff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 10px;
+            display: block;
+            width: fit-content;
+        }
+        
+        .change-pic-btn:hover {
+            background-color: #007acc;
+        }
+        
+        #avatar-container {
+            position: relative;
+            width: 60px;
+            height: 60px;
+        }
+        
+        @media screen and (max-width: 600px) {
+            .profile-pic-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .profile-pic-option {
+                width: 80px;
+                height: 80px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1079,7 +1306,7 @@ $hasOrganization = !empty($organizationId);
                 <a href="datasets.php">ALL DATASETS</a>
                 <a href="mydatasets.php">MY DATASETS</a>
                 <div class="profile-icon" id="navbar-profile-icon" style="position: relative;">
-                    <img src="images/avatarIconunknown.jpg" alt="Profile">
+                    <img src="<?php echo $profile_picture; ?>" alt="Profile">
                     <?php if ($total_count > 0): ?>
                         <span class="navbar-notification-badge" style="position: absolute; top: -5px; right: -5px;"><?php echo $total_count; ?></span>
                     <?php endif; ?>
@@ -1102,8 +1329,11 @@ $hasOrganization = !empty($organizationId);
             <div id="header">
                 <form action="verify_changes.php" method="POST" enctype="multipart/form-data">
                     <div id="profpic-firstname">
-                        <div>
-                            <img id="avatar" src="images/user_icon.png" alt="User Icon">
+                        <div id="avatar-container" onclick="openProfilePicModal()">
+                            <img id="avatar" src="<?php echo $profile_picture; ?>" alt="User Icon">
+                            <div class="avatar-overlay">
+                                <i class="fas fa-camera"></i>
+                            </div>
                         </div>
                         <div>
                             <span id="first_name"><?php echo $user['first_name']; ?></span>
@@ -1277,6 +1507,7 @@ $hasOrganization = !empty($organizationId);
     <?php include('leave_orgmodal.php');?>
     <?php include('sidebar.php');?>
     <?php include('category_modal.php');?>
+    <?php include('profile_picture_modal.php');?>
     <script>
         function showModal() {
             document.getElementById("categoryModal").style.display = "flex";
@@ -1303,14 +1534,86 @@ $hasOrganization = !empty($organizationId);
             }
         }
         
+        // Function to open profile picture modal
+        function openProfilePicModal() {
+            const modal = document.getElementById("profilePictureModal");
+            if (modal) {
+                modal.style.display = "flex";
+            } else {
+                console.error("Profile picture modal not found");
+            }
+        }
+        
+        // Function to close profile picture modal
+        function closeProfilePicModal() {
+            const modal = document.getElementById("profilePictureModal");
+            if (modal) {
+                modal.style.display = "none";
+            }
+        }
+        
         document.addEventListener("DOMContentLoaded", function () {
+            // Hide modals on page load
             document.getElementById("categoryModal").style.display = "none";
+            document.getElementById("profilePictureModal").style.display = "none";
+            
+            // Close modal when clicking outside the content
+            window.addEventListener('click', function(event) {
+                const profileModal = document.getElementById("profilePictureModal");
+                if (event.target === profileModal) {
+                    closeProfilePicModal();
+                }
+            });
             
             // Verify the leave organization modal exists
             const leaveOrgModal = document.getElementById("leaveOrgModal");
             if (!leaveOrgModal) {
                 console.error("Leave organization modal element not found");
             }
+            
+            // Set up profile picture selection
+            const profilePicOptions = document.querySelectorAll('.profile-pic-option');
+            let selectedPicture = null;
+            
+            profilePicOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    // Remove selected class from all options
+                    profilePicOptions.forEach(opt => opt.classList.remove('selected'));
+                    
+                    // Add selected class to clicked option
+                    this.classList.add('selected');
+                    
+                    // Store the selected picture filename
+                    selectedPicture = this.getAttribute('data-pic');
+                    
+                    // Show loading indicator or feedback
+                    this.querySelector('.pic-select-overlay').style.opacity = "1";
+                    
+                    // Automatically save the selected picture after a short delay
+                    setTimeout(() => {
+                        if (selectedPicture) {
+                            // Create a form to submit the selected picture
+                            const form = document.createElement('form');
+                            form.method = 'POST';
+                            form.action = 'update_profile_picture.php';
+                            
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = 'profile_picture';
+                            input.value = selectedPicture;
+                            
+                            form.appendChild(input);
+                            document.body.appendChild(form);
+                            
+                            // Close the modal before submitting to prevent it from showing on refresh
+                            closeProfilePicModal();
+                            
+                            // Submit the form
+                            form.submit();
+                        }
+                    }, 500); // 500ms delay to show the selection effect
+                });
+            });
             
             // Mobile menu toggle functionality
             const mobileMenuToggle = document.getElementById('mobile-menu-toggle');

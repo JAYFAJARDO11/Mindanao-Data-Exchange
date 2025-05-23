@@ -66,6 +66,15 @@ $validFiles = $_SESSION['valid_files'];
 // Get saved form data if available
 $formData = isset($_SESSION['form_data']) ? $_SESSION['form_data'] : [];
 $validationErrors = isset($_SESSION['validation_errors']) ? $_SESSION['validation_errors'] : [];
+
+// Check if user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
+// Include user profile picture
+include 'includes/user_profile_picture.php';
 ?>
 
 <!DOCTYPE html>
@@ -620,7 +629,7 @@ $validationErrors = isset($_SESSION['validation_errors']) ? $_SESSION['validatio
             <a href="datasets.php">ALL DATASETS</a>
             <a href="mydatasets.php">MY DATASETS</a>
             <div class="profile-icon" id="navbar-profile-icon" style="position: relative;">
-                <img src="images/avatarIconunknown.jpg" alt="Profile">
+                <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile">
                 <?php if ($total_count > 0): ?>
                     <span class="navbar-notification-badge" style="position: absolute; top: -5px; right: -5px;"><?php echo $total_count; ?></span>
                 <?php endif; ?>

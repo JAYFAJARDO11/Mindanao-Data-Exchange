@@ -11,6 +11,9 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
+// Include user profile picture
+include 'includes/user_profile_picture.php';
+
 // Initialize the total_count variable
 $total_count = 0;
 
@@ -456,7 +459,7 @@ $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organizati
                 <a href="datasets.php">DATASETS</a>
                 <a onclick="showModal()" style="cursor: pointer;">CATEGORY</a>
                 <div class="mdx-profile-icon" id="navbar-profile-icon">
-                    <img src="images/avatarIconunknown.jpg" alt="Profile">
+                    <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile">
                     <?php if ($total_count > 0): ?>
                         <span class="mdx-notification-badge"><?php echo $total_count; ?></span>
                     <?php endif; ?>

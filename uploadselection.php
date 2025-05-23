@@ -5,6 +5,9 @@ include 'db_connection.php'; // Ensure your DB connection is here
 // Include session update to ensure organization_id is synchronized
 include 'update_session.php';
 
+// Include user profile picture
+include 'includes/user_profile_picture.php';
+
 // Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
@@ -492,7 +495,7 @@ $total_count = $request_count + $notif_count;
         <a href="datasets.php">ALL DATASETS</a>
         <a href="mydatasets.php">MY DATASETS</a>
         <div class="profile-icon" id="navbar-profile-icon" style="position: relative;">
-            <img src="images/avatarIconunknown.jpg" alt="Profile">
+            <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile">
             <?php if ($total_count > 0): ?>
                 <span class="navbar-notification-badge" style="position: absolute; top: -5px; right: -5px;"><?php echo $total_count; ?></span>
             <?php endif; ?>

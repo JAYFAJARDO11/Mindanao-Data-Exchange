@@ -5,10 +5,14 @@ include 'update_session.php';
 include 'includes/error_handler.php';
 include 'includes/path_handler.php';
 
-// Redirect if not logged in
+// Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
-    handle_error("You must be logged in to view your organization requests.", ERROR_AUTH, "login.php");
+    header("Location: login.php");
+    exit();
 }
+
+// Include user profile picture
+include 'includes/user_profile_picture.php';
 
 $user_id = $_SESSION['user_id'];
 
@@ -644,7 +648,7 @@ $requests_result = $requests_stmt->get_result();
             <a href="datasets.php">ALL DATASETS</a>
             <a href="mydatasets.php">MY DATASETS</a>
             <div class="profile-icon" id="navbar-profile-icon" style="position: relative;">
-                <img src="images/avatarIconunknown.jpg" alt="Profile">
+                <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile">
                 <?php if ($total_count > 0): ?>
                     <span class="navbar-notification-badge" style="position: absolute; top: -5px; right: -5px;"><?php echo $total_count; ?></span>
                 <?php endif; ?>

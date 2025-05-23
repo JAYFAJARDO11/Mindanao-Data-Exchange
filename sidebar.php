@@ -8,7 +8,7 @@ if (!isset($_SESSION['user_id'])) {
 // Get user data if not already in session
 if (!isset($_SESSION['first_name'])) {
     include 'db_connection.php';
-    $sql = "SELECT first_name, last_name FROM users WHERE user_id = ?";
+    $sql = "SELECT first_name, last_name, profile_picture FROM users WHERE user_id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $_SESSION['user_id']);
     $stmt->execute();
@@ -16,6 +16,19 @@ if (!isset($_SESSION['first_name'])) {
     if ($user = $result->fetch_assoc()) {
         $_SESSION['first_name'] = $user['first_name'];
         $_SESSION['last_name'] = $user['last_name'];
+        $_SESSION['profile_picture'] = $user['profile_picture'];
+    }
+}
+
+// Get user's profile picture
+$profile_picture = isset($_SESSION['profile_picture']) ? $_SESSION['profile_picture'] : 'avatarIconunknown.jpg';
+// If profile_picture doesn't include the path, add it
+if (strpos($profile_picture, 'images/') === false) {
+    // Check if it's one of the numbered profile pictures (1.png through 6.png)
+    if (in_array($profile_picture, ['1.png', '2.png', '3.png', '4.png', '5.png', '6.png'])) {
+        $profile_picture = 'images/profile-pics/' . $profile_picture;
+    } else {
+        $profile_picture = 'images/' . $profile_picture;
     }
 }
 
@@ -103,6 +116,8 @@ $total_count = $request_count + $notif_count;
         height: 40px;
         border-radius: 50%;
         margin-right: 10px;
+        object-fit: cover;
+        border: 2px solid #ffffff;
     }
 
     .profile span {
@@ -242,7 +257,7 @@ $total_count = $request_count + $notif_count;
 <div class="sidebar-overlay"></div>
 <div class="sidebar">
     <div class="profile">
-        <img src="images/avatarIconunknown.jpg" alt="Profile">
+        <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile">
         <span><?php echo htmlspecialchars($_SESSION['first_name'] . ' ' . $_SESSION['last_name']); ?></span>
     </div>
     <a href="user_settings.php" class="menu-item">

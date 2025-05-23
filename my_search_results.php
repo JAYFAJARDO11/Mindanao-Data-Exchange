@@ -14,6 +14,9 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
+// Include user profile picture
+include 'includes/user_profile_picture.php';
+
 // Initialize the total_count variable
 $total_count = 0;
 
@@ -582,7 +585,7 @@ include 'batch_analytics.php';
             <a href="datasets.php">ALL DATASETS</a>
             <a href="mydatasets.php">MY DATASETS</a>
             <div class="profile-icon" id="navbar-profile-icon" style="position: relative;">
-                <img src="images/avatarIconunknown.jpg" alt="Profile">
+                <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile">
                 <?php if ($total_count > 0): ?>
                     <span class="navbar-notification-badge" style="position: absolute; top: -5px; right: -5px;"><?php echo $total_count; ?></span>
                 <?php endif; ?>

@@ -36,6 +36,9 @@ if ($notifCountResult) {
 // Total count for badge display (requests + notifications)
 $total_count = $request_count + $notif_count;
 
+// Include user profile picture
+include 'includes/user_profile_picture.php';
+
 // Handle request approval/rejection
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_id']) && isset($_POST['action'])) {
     $request_id = (int)$_POST['request_id'];
@@ -316,11 +319,14 @@ $requestsResult = mysqli_query($conn, $requestsSql);
         }
         .btn-approve {
             background-color: #28a745;
+            margin-bottom: 3px;
         }
         .btn-approve:hover {
             background-color: #218838;
         }
         .btn-reject {
+            width: 100%;
+            max-width: 79px;
             background-color: #dc3545;
         }
         .btn-reject:hover {
@@ -700,6 +706,16 @@ $requestsResult = mysqli_query($conn, $requestsSql);
                 margin-top: 15px;
             }
         }
+        /* Email style to prevent overflow */
+        .requester-email {
+            word-break: break-all;
+            overflow-wrap: break-word;
+            max-width: 100%;
+            font-size: 12px;
+            color: #666;
+            display: block;
+            margin-top: 3px;
+        }
     </style>
 </head>
 <body>
@@ -716,7 +732,7 @@ $requestsResult = mysqli_query($conn, $requestsSql);
             <a href="datasets.php">ALL DATASETS</a>
             <a href="mydatasets.php">MY DATASETS</a>
             <div class="profile-icon" id="navbar-profile-icon" style="position: relative;">
-                <img src="images/avatarIconunknown.jpg" alt="Profile">
+                <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile">
                 <?php if ($total_count > 0): ?>
                     <span class="navbar-notification-badge" style="position: absolute; top: -5px; right: -5px;"><?php echo $total_count; ?></span>
                 <?php endif; ?>
@@ -760,7 +776,7 @@ $requestsResult = mysqli_query($conn, $requestsSql);
                             <td>
                                 <?php echo htmlspecialchars($request['first_name'] . ' ' . $request['last_name']); ?>
                                 <br>
-                                <small><?php echo htmlspecialchars($request['email']); ?></small>
+                                <small class="requester-email"><?php echo htmlspecialchars($request['email']); ?></small>
                             </td>
                             <td><?php echo date('M j, Y, g:i a', strtotime($request['request_date'])); ?></td>
                             <td>

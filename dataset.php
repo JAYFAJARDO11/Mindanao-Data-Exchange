@@ -40,6 +40,9 @@ if ($notifCountResult) {
 // Total count for badge display (requests + notifications)
 $total_count = $request_count + $notif_count;
 
+// Include user profile picture
+include 'includes/user_profile_picture.php';
+
 function formatUrl($url) {
     if (empty($url)) {
         return '#';
@@ -654,8 +657,14 @@ $analytics = get_batch_analytics($conn, $batch_id);
         color: white;
         font-size: 24px;
         cursor: pointer;
-        padding: 0;
+        padding: 8px;
         z-index: 1001;
+        border-radius: 4px;
+        transition: background-color 0.3s ease;
+    }
+    
+    .mobile-menu-toggle:hover {
+        background-color: rgba(255, 255, 255, 0.2);
     }
     
     .mobile-menu-toggle i {
@@ -670,7 +679,7 @@ $analytics = get_batch_analytics($conn, $batch_id);
             width: 90%;
             max-width: 90%;
             position: relative;
-            z-index: 2;
+            z-index: 1001; /* Increased z-index to be higher than version tabs */
         }
         
         .mobile-menu-toggle {
@@ -713,12 +722,13 @@ $analytics = get_batch_analytics($conn, $batch_id);
             border-radius: 0 0 15px 15px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             display: none;
-            z-index: 9999;
+            z-index: 9999; /* Extremely high z-index to ensure it's on top of everything */
         }
         
         .nav-links.active {
             display: flex;
         }
+        
         
         .nav-links a {
             width: 100%;
@@ -2161,24 +2171,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
     }
     
-    // Mobile menu toggle functionality
-    const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
-    const navLinks = document.getElementById('nav-links');
-    
-    if (mobileMenuToggle && navLinks) {
-        mobileMenuToggle.addEventListener('click', function() {
-            navLinks.classList.toggle('active');
-        });
-        
-        // Close menu when clicking outside
-        document.addEventListener('click', function(event) {
-            const isClickInsideNavbar = event.target.closest('.navbar');
-            if (!isClickInsideNavbar && navLinks.classList.contains('active')) {
-                navLinks.classList.remove('active');
-            }
-        });
-    }
-    
     // Profile icon click handler
     const profileIcon = document.getElementById('navbar-profile-icon');
     if (profileIcon) {
@@ -2207,7 +2199,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <a href="datasets.php">ALL DATASETS</a>
             <a href="mydatasets.php">MY DATASETS</a>
             <div class="profile-icon" id="navbar-profile-icon" style="position: relative;">
-                <img src="images/avatarIconunknown.jpg" alt="Profile">
+                <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile">
                 <?php if ($total_count > 0): ?>
                     <span class="navbar-notification-badge" style="position: absolute; top: -5px; right: -5px;"><?php echo $total_count; ?></span>
                 <?php endif; ?>
@@ -2760,26 +2752,51 @@ document.addEventListener('DOMContentLoaded', function() {
         // Initialize character counter on document load
         document.addEventListener('DOMContentLoaded', function() {
             // Reset the form when modal is closed
-            document.querySelector('.close').addEventListener('click', function() {
-                document.getElementById('request_reason').value = '';
-                countChars();
+            const closeButtons = document.querySelectorAll('.close');
+            closeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    if (document.getElementById('request_reason')) {
+                        document.getElementById('request_reason').value = '';
+                        countChars();
+                    }
+                });
             });
             
             // Mobile menu toggle
             const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
             const navLinks = document.getElementById('nav-links');
+            const versionTabs = document.querySelector('.version-tabs');
             
-            mobileMenuToggle.addEventListener('click', function() {
-                navLinks.classList.toggle('active');
-            });
-            
-            // Close menu when clicking outside
-            document.addEventListener('click', function(event) {
-                const isClickInsideNavbar = event.target.closest('.navbar');
-                if (!isClickInsideNavbar && navLinks.classList.contains('active')) {
-                    navLinks.classList.remove('active');
-                }
-            });
+            if (mobileMenuToggle && navLinks) {
+                console.log('Mobile menu toggle and nav links found');
+                mobileMenuToggle.addEventListener('click', function(event) {
+                    console.log('Mobile menu toggle clicked');
+                    event.stopPropagation(); // Prevent event bubbling
+                    
+                    // Toggle menu visibility
+                    if (navLinks.classList.contains('active')) {
+                        navLinks.classList.remove('active');
+                    } else {
+                        navLinks.classList.add('active');
+                    }
+                    
+                    console.log('Nav links active:', navLinks.classList.contains('active'));
+                });
+                
+                // Close menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    const isClickInsideNavbar = event.target.closest('.navbar');
+                    if (!isClickInsideNavbar && navLinks.classList.contains('active')) {
+                        console.log('Clicking outside, closing menu');
+                        navLinks.classList.remove('active');
+                    }
+                });
+            } else {
+                console.log('Mobile menu toggle or nav links not found', {
+                    mobileMenuToggle: mobileMenuToggle,
+                    navLinks: navLinks
+                });
+            }
         });
 
     function openEditModal() {

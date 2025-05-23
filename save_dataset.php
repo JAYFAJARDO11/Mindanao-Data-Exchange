@@ -274,7 +274,7 @@ if (isset($_SESSION['current_upload_dir']) && is_dir($_SESSION['current_upload_d
     unset($_SESSION['current_upload_dir']);
 }
 
-$_SESSION['success_message'] = "Dataset added successfully!";
+// Set upload success flag and redirect to success page
 $_SESSION['upload_success'] = true;
 header("Location: dataset_success.php");
 exit();

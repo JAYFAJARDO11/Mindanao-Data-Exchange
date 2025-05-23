@@ -40,6 +40,9 @@ if ($notifCountResult) {
 // Total count for badge display (requests + notifications)
 $total_count = $request_count + $notif_count;
 
+// Include user profile picture
+include 'includes/user_profile_picture.php';
+
 function formatUrl($url) {
     if (empty($url)) {
         return '#';
@@ -451,7 +454,7 @@ $resourcesResult = mysqli_stmt_get_result($stmt);
                 width: 90%;
                 max-width: 90%;
                 position: relative;
-                z-index: 2;
+                z-index: 1002;
             }
             
             .mobile-menu-toggle {
@@ -1697,7 +1700,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <a href="datasets.php">ALL DATASETS</a>
             <a href="mydatasets.php">MY DATASETS</a>
             <div class="profile-icon" id="navbar-profile-icon" style="position: relative;">
-                <img src="images/avatarIconunknown.jpg" alt="Profile">
+                <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile">
                 <?php if ($total_count > 0): ?>
                     <span class="navbar-notification-badge" style="position: absolute; top: -5px; right: -5px;"><?php echo $total_count; ?></span>
                 <?php endif; ?>
