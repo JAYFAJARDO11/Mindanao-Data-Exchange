@@ -10,38 +10,38 @@
                     <i class="fas fa-check-circle"></i>
                 </div>
             </div>
-            <div class="profile-pic-option" data-pic="1.png">
-                <img src="images/profile-pics/1.png" alt="Avatar 1">
+            <div class="profile-pic-option" data-pic="1.jpg">
+                <img src="images/profile-pics/1.jpg" alt="Avatar 1">
                 <div class="pic-select-overlay">
                     <i class="fas fa-check-circle"></i>
                 </div>
             </div>
-            <div class="profile-pic-option" data-pic="2.png">
-                <img src="images/profile-pics/2.png" alt="Avatar 2">
+            <div class="profile-pic-option" data-pic="2.jpg">
+                <img src="images/profile-pics/2.jpg" alt="Avatar 2">
                 <div class="pic-select-overlay">
                     <i class="fas fa-check-circle"></i>
                 </div>
             </div>
-            <div class="profile-pic-option" data-pic="3.png">
-                <img src="images/profile-pics/3.png" alt="Avatar 3">
+            <div class="profile-pic-option" data-pic="3.jpg">
+                <img src="images/profile-pics/3.jpg" alt="Avatar 3">
                 <div class="pic-select-overlay">
                     <i class="fas fa-check-circle"></i>
                 </div>
             </div>
-            <div class="profile-pic-option" data-pic="4.png">
-                <img src="images/profile-pics/4.png" alt="Avatar 4">
+            <div class="profile-pic-option" data-pic="4.jpg">
+                <img src="images/profile-pics/4.jpg" alt="Avatar 4">
                 <div class="pic-select-overlay">
                     <i class="fas fa-check-circle"></i>
                 </div>
             </div>
-            <div class="profile-pic-option" data-pic="5.png">
-                <img src="images/profile-pics/5.png" alt="Avatar 5">
+            <div class="profile-pic-option" data-pic="5.jpg">
+                <img src="images/profile-pics/5.jpg" alt="Avatar 5">
                 <div class="pic-select-overlay">
                     <i class="fas fa-check-circle"></i>
                 </div>
             </div>
-            <div class="profile-pic-option" data-pic="6.png">
-                <img src="images/profile-pics/6.png" alt="Avatar 6">
+            <div class="profile-pic-option" data-pic="6.jpg">
+                <img src="images/profile-pics/6.jpg" alt="Avatar 6">
                 <div class="pic-select-overlay">
                     <i class="fas fa-check-circle"></i>
                 </div>

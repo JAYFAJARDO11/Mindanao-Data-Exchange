@@ -145,29 +145,13 @@ $top_organizations = $conn->query($sql);
         .activity-item:last-child {
             border-bottom: none;
         }
-        
-        /* Maintenance task styling */
-        .maintenance-task {
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            border-left: 4px solid #0099ff;
+        .badge-public {
+            background-color: #28a745;
+            color: white;
         }
-        
-        .maintenance-task h5 {
-            color: #0099ff;
-            margin-bottom: 10px;
-        }
-        
-        .maintenance-task p {
-            color: #6c757d;
-            margin-bottom: 15px;
-        }
-        
-        .maintenance-task i {
-            margin-right: 8px;
+        .badge-private {
+            background-color: #dc3545;
+            color: white;
         }
         
         .alert-success {
@@ -266,31 +250,6 @@ $top_organizations = $conn->query($sql);
                 <?php echo htmlspecialchars($_GET['message']); ?>
             </div>
         <?php endif; ?>
-
-        <!-- Maintenance Tasks -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">Maintenance Tasks</h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="maintenance-task">
-                            <h5><i class="fas fa-clock"></i> Organization Request Expiration</h5>
-                            <p>Check for expired organization membership requests and notify users</p>
-                            <a href="test_expire_requests.php" class="btn btn-primary btn-sm">Run Expiration Check</a>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="maintenance-task">
-                            <h5><i class="fas fa-tasks"></i> Schedule Automatic Expiration</h5>
-                            <p>Set up a scheduled task to automatically check for expired requests daily</p>
-                            <a href="setup_expiration_task.bat" class="btn btn-outline-primary btn-sm" download>Download Task Setup Script</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <div class="row">
             <!-- Recent Datasets -->

@@ -25,8 +25,8 @@ $profile_picture = isset($_SESSION['profile_picture']) ? $_SESSION['profile_pict
 
 // If profile_picture doesn't include the path, add it
 if (strpos($profile_picture, 'images/') === false) {
-    // Check if it's one of the numbered profile pictures (1.png through 6.png)
-    if (in_array($profile_picture, ['1.png', '2.png', '3.png', '4.png', '5.png', '6.png'])) {
+    // Check if it's one of the numbered profile pictures (1.jpg through 6.jpg)
+    if (in_array($profile_picture, ['1.jpg', '2.jpg', '3.jpg', '4.jpg', '5.jpg', '6.jpg'])) {
         $profile_picture = 'images/profile-pics/' . $profile_picture;
     } else {
         $profile_picture = 'images/' . $profile_picture;
