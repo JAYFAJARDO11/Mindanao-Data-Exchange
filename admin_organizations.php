@@ -294,6 +294,7 @@ if (isset($_POST['delete_org']) && isset($_POST['org_id'])) {
         .col-4 {
             width: 33.333333%;
             padding: 0 15px;
+            margin-bottom: 10px;
         }
         
         /* Utilities */

@@ -2,6 +2,9 @@
 session_start();
 include 'db_connection.php'; // Include your database connection file
 
+// Include session tracking
+include 'includes/session.php';
+
 // Include session update to ensure organization_id is synchronized
 include 'update_session.php';
 
@@ -46,13 +49,13 @@ if (isset($_SESSION['user_id'])) {
 // Total count for badge display (requests + notifications)
 $total_count = $request_count + $notif_count;
 
-// Query to count the number of datasets in the database
-$sql = "SELECT COUNT(*) AS dataset_count FROM datasets";
+// Query to count the number of dataset batches in the database
+$sql = "SELECT COUNT(*) AS dataset_count FROM dataset_batches";
 $result = mysqli_query($conn, $sql);
 $row = mysqli_fetch_assoc($result);
-$dataset_count = $row['dataset_count']; // Store the dataset count
-// Query to count the number of unique users (distinct user_id) in the datasets table
-$sql_sources = "SELECT COUNT(DISTINCT user_id) AS unique_sources FROM datasets";
+$dataset_count = $row['dataset_count']; // Store the dataset batch count
+// Query to count the number of unique users (distinct user_id) in the dataset_batches table
+$sql_sources = "SELECT COUNT(DISTINCT user_id) AS unique_sources FROM dataset_batches";
 $result_sources = mysqli_query($conn, $sql_sources);
 $row_sources = mysqli_fetch_assoc($result_sources);
 $sources_count = $row_sources['unique_sources']; // Store the unique sources count
@@ -299,6 +302,7 @@ $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organizati
     
     /* Other non-navbar styles */
     h1 {
+        font-size: 90px;
         font-weight: 600;
         margin-bottom: 20px;
         color: rgba(0, 153, 255, 0.8);
@@ -307,27 +311,51 @@ $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organizati
     }
     h1:hover {
         color: rgba(0, 172, 255, 1);
+        font-size: 95px;
         text-shadow: 2px 2px 5px rgba(233, 230, 230, 0.3);
     }
     #tagline {
         color: rgba(0, 153, 255, 0.8);
         text-align: center;
+        font-size: 1.2rem;
         margin-top: 10px;
         text-shadow: 1px 1px 5px rgba(255, 253, 253, 0.67);
         transition: all 0.3s ease;
     }
     #tagline:hover {
         color: rgba(0, 172, 255, 1);
+        font-size: 1.3rem;
         text-shadow: 2px 2px 8px rgb(255, 253, 253);
     }
+    .stats-box {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        padding: 20px 0px 0px 0px;
+        width: 30%;
+        margin: 0 auto;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        font-size: 30px;
+        font-weight: bold;
+        color: #ffffff;
+    }
+    
     .stat {
         flex: 1;
         text-align: center;
         color: rgba(28, 132, 227, 0.8);
     }
+    
     .divider {
+        width: 3px;
         background-color: black;
+        height: 90px;
+        margin-top: -20px;
     }
+    
     .tooltip-text {
         position: absolute;
         top: 50%;
@@ -535,7 +563,7 @@ $upload_disabled = !isset($_SESSION['organization_id']) || $_SESSION['organizati
             <div class="stats-box">
                 <div class="stat">
                 <span class="stat-number"><?= number_format($dataset_count) ?></span>
-                    <p>Dataset Files</p>
+                    <p>Datasets</p>
                 </div>
                 <div class="divider"></div>
                 <div class="stat">

@@ -1,3 +1,7 @@
+<?php
+session_start();
+include 'db_connection.php'; // Include database connection
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -218,9 +222,17 @@
     </button>
     
     <nav class="mdx-nav-links" id="nav-links">
-      <a href="mindanaodataexchange.php">Home</a>
-      <a href="login.php">Login</a>
-      <a href="AccountSelectionPage.php">Sign Up</a>
+      <?php if (isset($_SESSION['user_id'])): ?>
+        <!-- Logged in navigation -->
+        <a href="HomeLogin.php">HOME</a>
+        <a href="datasets.php">DATASETS</a>
+        <a onclick="showModal()" style="cursor: pointer;">CATEGORY</a>
+      <?php else: ?>
+        <!-- Not logged in navigation -->
+        <a href="MindanaoDataExchange.php">Home</a>
+        <a href="login.php">Login</a>
+        <a href="AccountSelectionPage.php">Sign Up</a>
+      <?php endif; ?>
     </nav>
   </header>
 
@@ -366,5 +378,31 @@ We may update this policy to reflect changes in laws or our practices. We will n
       });
     });
   </script>
+
+  <!-- Add this script if the user is logged in to support the category modal -->
+  <?php if (isset($_SESSION['user_id'])): ?>
+  <script>
+    function showModal() {
+      // Check if the modal exists, if not, we need to handle this differently
+      if (document.getElementById("categoryModal")) {
+        document.getElementById("categoryModal").style.display = "flex";
+      } else {
+        // Redirect to the category page instead
+        window.location.href = "category.php";
+      }
+    }
+    
+    function hideModal() {
+      if (document.getElementById("categoryModal")) {
+        document.getElementById("categoryModal").style.display = "none";
+      }
+    }
+  </script>
+  <?php endif; ?>
+
+  <!-- Include the category modal if user is logged in -->
+  <?php if (isset($_SESSION['user_id'])): ?>
+    <?php include 'category_modal.php'; ?>
+  <?php endif; ?>
 </body>
 </html>

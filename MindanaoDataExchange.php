@@ -2,13 +2,13 @@
 session_start();
 include 'db_connection.php'; // Include your database connection file
 
-// Query to count the number of datasets in the database
-$sql = "SELECT COUNT(*) AS dataset_count FROM datasets";
+// Query to count the number of dataset batches in the database
+$sql = "SELECT COUNT(*) AS dataset_count FROM dataset_batches";
 $result = mysqli_query($conn, $sql);
 $row = mysqli_fetch_assoc($result);
-$dataset_count = $row['dataset_count']; // Store the dataset count
-// Query to count the number of unique users (distinct user_id) in the datasets table
-$sql_sources = "SELECT COUNT(DISTINCT user_id) AS unique_sources FROM datasets";
+$dataset_count = $row['dataset_count']; // Store the dataset batch count
+// Query to count the number of unique users (distinct user_id) in the dataset_batches table
+$sql_sources = "SELECT COUNT(DISTINCT user_id) AS unique_sources FROM dataset_batches";
 $result_sources = mysqli_query($conn, $sql_sources);
 $row_sources = mysqli_fetch_assoc($result_sources);
 $sources_count = $row_sources['unique_sources']; // Store the unique sources count
@@ -432,7 +432,7 @@ $sources_count = $row_sources['unique_sources']; // Store the unique sources cou
             <div class="stats-box">
                 <div class="stat">
                 <span class="stat-number"><?= number_format($dataset_count) ?></span>
-                    <p>Dataset Files</p>
+                    <p>Datasets</p>
                 </div>
                 <div class="divider"></div>
                 <div class="stat">
@@ -518,7 +518,7 @@ $sources_count = $row_sources['unique_sources']; // Store the unique sources cou
                     <a href="https://www.facebook.com/61576255121231" target="_blank" class="social-link">
                         <i class="fab fa-facebook-f"></i>
                     </a>
-                    <a href="https://www.instagram.com/mindanaodataexchange/-" target="_blank" class="social-link">
+                    <a href="https://www.instagram.com/mindanaodataexchange/" target="_blank" class="social-link">
                         <i class="fab fa-instagram"></i>
                     </a>
                     <a href="https://www.linkedin.com/in/mindanao-data-exchange-270b97366/" target="_blank" class="social-link">

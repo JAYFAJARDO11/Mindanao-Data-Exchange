@@ -2,6 +2,7 @@
 session_start();
 include 'db_connection.php';
 include 'includes/error_handler.php';
+include 'session_management.php'; // Include session management functions
 
 // Check if admin is already logged in
 if (isset($_SESSION['admin_id'])) {
@@ -43,6 +44,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 // Set session variables
                 $_SESSION['admin_id'] = $admin['admin_id'];
                 $_SESSION['admin_name'] = $admin['name'];
+                
+                // Track admin session using the user_sessions table 
+                try {
+                    update_user_session($conn, $admin['admin_id'], session_id());
+                } catch (Exception $e) {
+                    // Log the error but continue with login process
+                    log_error("Admin session tracking error", ERROR_DATABASE, [
+                        'exception' => $e->getMessage(),
+                        'admin_id' => $admin['admin_id']
+                    ]);
+                }
                 
                 // Update last login time
                 $update_sql = "UPDATE administrator SET last_login = NOW() WHERE admin_id = ?";
@@ -87,6 +99,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $_SESSION['admin_id'] = $user['user_id'];
                     $_SESSION['admin_name'] = $user['first_name'] . ' ' . $user['last_name'];
                     $_SESSION['admin_from_user'] = true; // Flag to indicate admin is from users table
+                    
+                    // For user-admins, we can safely track their session
+                    // since they exist in the users table
+                    try {
+                        update_user_session($conn, $user['user_id'], session_id());
+                    } catch (Exception $e) {
+                        // Log the error but continue with login process
+                        log_error("User-admin session tracking error", ERROR_DATABASE, [
+                            'exception' => $e->getMessage(),
+                            'user_id' => $user['user_id']
+                        ]);
+                    }
                     
                     // Log successful login
                     log_error("User with admin role logged in as admin", "auth", ['user_id' => $user['user_id'], 'email' => $email]);

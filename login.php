@@ -2,6 +2,7 @@
 session_start();
 include 'db_connection.php';
 include 'includes/error_handler.php';
+include 'session_management.php'; // Include session management functions
 
 // If user is already logged in, redirect to home page
 if (isset($_SESSION['user_id'])) {
@@ -72,6 +73,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         $_SESSION['has_organization'] = false;
                     }
                 }
+                
+                // Track user session for online status
+                update_user_session($conn, $user['user_id'], session_id());
                 
                 // Log successful login
                 log_error("User logged in successfully: " . $user['email'], "auth", ['user_id' => $user['user_id']]);
@@ -403,8 +407,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </div>
             
             <div class="message-container">
-                <?php echo display_error_message(); ?>
-                <?php echo display_success_message(); ?>
+                <?php
+                // Display error messages from error handler
+                echo display_error_message();
+                echo display_success_message();
+                
+                // Display force logout message if it exists
+                if (isset($_SESSION['logout_message'])) {
+                    echo '<div class="error-message">' . 
+                        htmlspecialchars($_SESSION['logout_message']) . 
+                        '</div>';
+                    unset($_SESSION['logout_message']);
+                }
+                
+                // Display URL parameter message if it exists
+                if (isset($_GET['message'])) {
+                    echo '<div class="error-message">' . 
+                        htmlspecialchars($_GET['message']) . 
+                        '</div>';
+                }
+                ?>
             </div>
             
             <form action="login.php" method="POST">

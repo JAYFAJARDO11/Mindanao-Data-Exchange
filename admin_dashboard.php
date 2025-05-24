@@ -2,19 +2,13 @@
 session_start();
 include 'db_connection.php';
 
+// Include session tracker
+include 'session_tracker.php';
+
 // Check if admin is logged in
 if (!isset($_SESSION['admin_id'])) {
     header("Location: admin_login.php");
     exit();
-}
-
-// Handle force logout
-if (isset($_POST['force_logout']) && isset($_POST['user_id'])) {
-    $user_id = $_POST['user_id'];
-    $sql = "DELETE FROM user_sessions WHERE user_id = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
 }
 
 // Get total counts for dashboard stats
@@ -87,6 +81,25 @@ $sql = "SELECT o.name, COUNT(u.user_id) as member_count
         ORDER BY member_count DESC
         LIMIT 5";
 $top_organizations = $conn->query($sql);
+
+// Get online users from user_sessions table
+// Consider users online if their last activity was within the last 15 minutes
+$online_timeout = date('Y-m-d H:i:s', strtotime('-15 minutes'));
+
+// Get only regular users who are online (no admins)
+$sql = "SELECT us.user_id, us.last_activity, u.first_name, u.last_name, u.email, 
+        o.name as organization_name
+        FROM user_sessions us
+        JOIN users u ON us.user_id = u.user_id
+        LEFT JOIN organizations o ON u.organization_id = o.organization_id
+        WHERE us.last_activity > ?
+        ORDER BY us.last_activity DESC";
+
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("s", $online_timeout);
+$stmt->execute();
+$online_users = $stmt->get_result();
+$online_users_count = $online_users->num_rows;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -711,6 +724,45 @@ $top_organizations = $conn->query($sql);
                                 <?php endwhile; ?>
                             <?php endif; ?>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Online Users Widget -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="widget">
+                    <div class="widget-title">
+                        <i class="fas fa-user-clock"></i> Online Users (<?php echo $online_users_count; ?>)
+                    </div>
+                    <div class="widget-body">
+                        <?php if ($online_users_count === 0): ?>
+                            <p class="text-muted">No users currently online</p>
+                        <?php else: ?>
+                            <div class="row">
+                                <?php 
+                                // Display regular online users
+                                while ($user = $online_users->fetch_assoc()): 
+                                ?>
+                                    <div class="col-md-4">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h5 class="card-title">
+                                                    <?php echo htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?>
+                                                </h5>
+                                                <p>
+                                                    <i class="fas fa-envelope"></i> <?php echo htmlspecialchars($user['email']); ?><br>
+                                                    <i class="fas fa-building"></i> <?php echo htmlspecialchars($user['organization_name'] ?? 'None'); ?><br>
+                                                    <i class="fas fa-clock"></i> Last Activity: <?php echo date('H:i:s', strtotime($user['last_activity'])); ?>
+                                                </p>
+                                                <span class="badge badge-success">Online</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endwhile; ?>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
