@@ -62,6 +62,9 @@ try {
         // Handle file uploads
         $file_paths = [];
         if (isset($_FILES['files']) && !empty($_FILES['files']['name'][0])) {
+            // Define allowed file types
+            $allowed_extensions = ["csv", "xls", "xlsx", "json", "xml"];
+            
             // Get the base directory from the current file path
             $current_file_path = $dataset['file_path'];
             $base_dir = dirname($current_file_path);
@@ -73,6 +76,13 @@ try {
             
             foreach ($_FILES['files']['tmp_name'] as $key => $tmp_name) {
                 if ($_FILES['files']['error'][$key] === UPLOAD_ERR_OK) {
+                    // Check file extension
+                    $file_extension = strtolower(pathinfo($_FILES['files']['name'][$key], PATHINFO_EXTENSION));
+                    if (!in_array($file_extension, $allowed_extensions)) {
+                        // Invalid file type
+                        throw new Exception("Only CSV, XLS, XLSX, JSON, and XML files are allowed.");
+                    }
+                    
                     // Sanitize filename and make it unique
                     $original_name = sanitize_filename($_FILES['files']['name'][$key]);
                     $unique_filename = generate_unique_filename($version_dir, $original_name);

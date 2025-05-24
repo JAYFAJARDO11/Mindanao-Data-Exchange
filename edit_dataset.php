@@ -183,6 +183,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if ($_FILES['files']['error'][$i] === UPLOAD_ERR_OK) {
                         // Get original filename and sanitize it
                         $original_name = $_FILES['files']['name'][$i];
+                        
+                        // Check file extension
+                        $file_extension = strtolower(pathinfo($original_name, PATHINFO_EXTENSION));
+                        $allowed_extensions = ["csv", "xls", "xlsx", "json", "xml"];
+                        
+                        if (!in_array($file_extension, $allowed_extensions)) {
+                            // Invalid file type
+                            $error = "Error: Only CSV, XLS, XLSX, JSON, and XML files are allowed.";
+                            mysqli_rollback($conn);
+                            break;
+                        }
+                        
                         $sanitized_name = preg_replace('/[^a-zA-Z0-9_.-]/', '_', $original_name);
                         
                         // Use original filename instead of generating a new one
@@ -1009,10 +1021,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="form-section file-upload-section" style="display: none;">
                     <h3>Files</h3>
                     <div class="file-upload-container">
-                        <input type="file" name="files[]" id="files" multiple>
+                        <input type="file" name="files[]" id="files" multiple accept=".csv,.xls,.xlsx,.json,.xml">
                         <div id="fileList" class="file-list"></div>
                     </div>
-                    <p class="form-help">Select new files to upload for the new version.</p>
+                    <p class="form-help">Select new files to upload for the new version. Only CSV, XLS, XLSX, JSON, and XML files are accepted.</p>
                 </div>
 
                 <div class="form-section version-notes" style="display: none;">

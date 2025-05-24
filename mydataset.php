@@ -1540,6 +1540,11 @@ $resourcesResult = mysqli_stmt_get_result($stmt);
     .comment-item {
       position: relative;
     }
+
+    .file-list .invalid-file {
+        background-color: #ffeeee;
+        border-left: 3px solid #ff0000;
+    }
   </style>
 </head>
 <body>
@@ -2074,10 +2079,10 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="form-group file-upload-section" style="display: none;">
                 <label for="files">Files:</label>
                 <div class="file-upload-container">
-                    <input type="file" name="files[]" id="files" multiple>
+                    <input type="file" name="files[]" id="files" multiple accept=".csv,.xls,.xlsx,.json,.xml">
                     <div id="fileList" class="file-list"></div>
                 </div>
-                <p class="form-help">Select new files to upload for the new version.</p>
+                <p class="form-help">Select new files to upload for the new version. Only CSV, XLS, XLSX, JSON, and XML files are accepted.</p>
             </div>
 
             <div class="form-group version-notes" style="display: none;">
@@ -2167,16 +2172,39 @@ document.addEventListener('DOMContentLoaded', function() {
         const fileList = document.getElementById('fileList');
         fileList.innerHTML = '';
         
+        const allowedTypes = ['csv', 'xls', 'xlsx', 'json', 'xml'];
+        let hasInvalidFiles = false;
+        
         Array.from(e.target.files).forEach(file => {
             const fileItem = document.createElement('div');
             fileItem.className = 'file-item';
+            
+            // Get file extension
+            const fileExtension = file.name.split('.').pop().toLowerCase();
+            const isValidType = allowedTypes.includes(fileExtension);
+            
+            if (!isValidType) {
+                fileItem.className += ' invalid-file';
+                hasInvalidFiles = true;
+            }
+            
             fileItem.innerHTML = `
                 <i class="fas fa-file"></i>
                 <span>${file.name}</span>
-                <span style="margin-left: auto; color: #666;">${(file.size / 1024).toFixed(1)} KB</span>
+                <span style="margin-left: auto; color: ${isValidType ? '#666' : '#ff0000'};">
+                    ${(file.size / 1024).toFixed(1)} KB
+                    ${!isValidType ? ' - Invalid file type' : ''}
+                </span>
             `;
             fileList.appendChild(fileItem);
         });
+        
+        if (hasInvalidFiles) {
+            alert('One or more files have invalid types. Only CSV, XLS, XLSX, JSON, and XML files are accepted.');
+            // Clear the file input
+            this.value = '';
+            fileList.innerHTML = '';
+        }
     });
 
     // Show/hide version notes based on update type
