@@ -250,32 +250,77 @@ $requests_result = $conn->query($requests_sql);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Organization Requests - Admin Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        /* Layout */
         .sidebar {
             background: #0c1a36;
             color: white;
             height: 100vh;
             position: fixed;
+            width: 250px;
             padding: 20px;
+            overflow-y: auto;
         }
-        .sidebar .nav-link {
-            color: white;
-            padding: 10px 20px;
-            margin: 5px 0;
-            border-radius: 5px;
-        }
-        .sidebar .nav-link:hover {
-            background: rgba(255,255,255,0.1);
-        }
-        .sidebar .nav-link.active {
-            background: #0099ff;
-        }
+        
         .main-content {
             margin-left: 250px;
             padding: 20px;
         }
+        
+        /* Typography */
+        h1, h2, h3, h4, h5, h6 {
+            margin-bottom: 15px;
+        }
+        
+        p {
+            margin-bottom: 15px;
+        }
+        
+        /* Navigation */
+        .sidebar h3 {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .nav {
+            list-style: none;
+        }
+        
+        .nav-link {
+            display: block;
+            color: white;
+            padding: 10px 20px;
+            margin: 5px 0;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .nav-link.active {
+            background: #0099ff;
+        }
+        
+        /* Request Card */
         .request-card {
             background: white;
             border-radius: 10px;
@@ -283,6 +328,7 @@ $requests_result = $conn->query($requests_sql);
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             margin-bottom: 20px;
         }
+        
         .request-header {
             display: flex;
             justify-content: space-between;
@@ -291,21 +337,14 @@ $requests_result = $conn->query($requests_sql);
             border-bottom: 1px solid #e9ecef;
             padding-bottom: 15px;
         }
+        
         .request-title {
             font-size: 18px;
             font-weight: bold;
             color: #0099ff;
             margin: 0;
         }
-        .badge-pending {
-            background-color: #ffc107;
-        }
-        .badge-approved {
-            background-color: #28a745;
-        }
-        .badge-rejected {
-            background-color: #dc3545;
-        }
+        
         .request-description {
             background-color: #f8f9fa;
             border-radius: 5px;
@@ -314,6 +353,47 @@ $requests_result = $conn->query($requests_sql);
             margin-bottom: 20px;
             white-space: pre-wrap;
         }
+        
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            font-size: 12px;
+            font-weight: bold;
+            line-height: 1;
+            color: white;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 10px;
+        }
+        
+        .badge-pending {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        
+        .badge-approved {
+            background-color: #28a745;
+        }
+        
+        .badge-rejected {
+            background-color: #dc3545;
+        }
+        
+        /* Grid Layout */
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -15px;
+        }
+        
+        .col-6 {
+            width: 50%;
+            padding: 0 15px;
+        }
+        
+        /* Document Links */
         .document-link {
             display: inline-block;
             padding: 8px 12px;
@@ -325,31 +405,244 @@ $requests_result = $conn->query($requests_sql);
             margin-right: 10px;
             margin-bottom: 10px;
         }
+        
         .document-link:hover {
             background-color: #e9ecef;
             text-decoration: none;
         }
+        
+        .document-link i {
+            margin-right: 8px;
+        }
+        
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 8px 12px;
+            background-color: #e9ecef;
+            color: #333;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            line-height: 1.5;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+        }
+        
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
         .btn-respond {
             min-width: 120px;
         }
+        
+        /* Alerts */
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            position: relative;
+        }
+        
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .alert-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            overflow: auto;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-dialog {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin: 1.75rem auto;
+        }
+        
         .modal-content {
+            position: relative;
+            background-color: #fff;
             border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .modal-title {
+            margin: 0;
+            font-size: 18px;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .modal-footer {
+            padding: 15px 20px;
+            display: flex;
+            justify-content: flex-end;
+            border-top: 1px solid #dee2e6;
+        }
+        
+        .modal-footer .btn {
+            margin-left: 10px;
+        }
+        
+        /* Form Elements */
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        .form-control {
+            display: block;
+            width: 100%;
+            padding: 8px 12px;
+            font-size: 14px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            transition: border-color 0.3s;
+            margin-bottom: 15px;
+        }
+        
+        textarea.form-control {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .form-control:focus {
+            border-color: #80bdff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        
+        /* Utility Classes */
+        .mb-3 {
+            margin-bottom: 15px;
+        }
+        
+        .mb-4 {
+            margin-bottom: 20px;
+        }
+        
+        .me-2 {
+            margin-right: 10px;
+        }
+        
+        .mt-2 {
+            margin-top: 10px;
+        }
+        
+        .justify-end {
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .row {
+                flex-direction: column;
+            }
+            
+            .col-6 {
+                width: 100%;
+            }
+            
+            .modal-dialog {
+                margin: 10px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="sidebar">
-        <h3 class="mb-4">Admin Panel</h3>
-        <nav class="nav flex-column">
-            <a class="nav-link" href="admin_dashboard.php"><i class="fas fa-home"></i> Dashboard</a>
-            <a class="nav-link" href="admin_users.php"><i class="fas fa-users"></i> Users</a>
-            <a class="nav-link" href="admin_datasets.php"><i class="fas fa-database"></i> Datasets</a>
-            <a class="nav-link" href="admin_organizations.php"><i class="fas fa-building"></i> Organizations</a>
-            <a class="nav-link active" href="#"><i class="fas fa-clipboard-list"></i> Org Requests</a>
-            <a class="nav-link" href="admin_notifications.php"><i class="fas fa-bell"></i> Notifications</a>
-            <a class="nav-link" href="admin_settings.php"><i class="fas fa-cog"></i> Settings</a>
-            <a class="nav-link" href="admin_to_main.php"><i class="fas fa-globe"></i> Main Site</a>
-            <a class="nav-link" href="admin_logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        <h3>Admin Panel</h3>
+        <nav>
+            <ul class="nav">
+                <li><a class="nav-link" href="admin_dashboard.php"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a class="nav-link" href="admin_users.php"><i class="fas fa-users"></i> Users</a></li>
+                <li><a class="nav-link" href="admin_datasets.php"><i class="fas fa-database"></i> Datasets</a></li>
+                <li><a class="nav-link" href="admin_organizations.php"><i class="fas fa-building"></i> Organizations</a></li>
+                <li><a class="nav-link active" href="#"><i class="fas fa-clipboard-list"></i> Org Requests</a></li>
+                <li><a class="nav-link" href="admin_notifications.php"><i class="fas fa-bell"></i> Notifications</a></li>
+                <li><a class="nav-link" href="admin_settings.php"><i class="fas fa-cog"></i> Settings</a></li>
+                <li><a class="nav-link" href="admin_to_main.php"><i class="fas fa-globe"></i> Main Site</a></li>
+                <li><a class="nav-link" href="admin_logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
         </nav>
     </div>
 
@@ -385,13 +678,13 @@ $requests_result = $conn->query($requests_sql);
                     </div>
                     
                     <div class="row mb-3">
-                        <div class="col-md-6">
+                        <div class="col-6">
                             <p><strong>Requester:</strong> <?php echo htmlspecialchars($request['first_name'] . ' ' . $request['last_name']); ?></p>
                             <p><strong>Email:</strong> <?php echo htmlspecialchars($request['email']); ?></p>
                             <p><strong>Organization Type:</strong> <?php echo htmlspecialchars($request['type']); ?></p>
                             <p><strong>Contact Email:</strong> <?php echo htmlspecialchars($request['contact_email']); ?></p>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-6">
                             <?php if (!empty($request['website_url'])): ?>
                                 <p><strong>Website:</strong> <a href="<?php echo htmlspecialchars($request['website_url']); ?>" target="_blank"><?php echo htmlspecialchars($request['website_url']); ?></a></p>
                             <?php endif; ?>
@@ -440,14 +733,14 @@ $requests_result = $conn->query($requests_sql);
                                     }
                             ?>
                                 <a href="<?php echo htmlspecialchars($doc_path); ?>" target="_blank" class="document-link">
-                                    <i class="fas fa-file-alt me-2"></i><?php echo htmlspecialchars($document['document_name']); ?>
+                                    <i class="fas fa-file-alt"></i><?php echo htmlspecialchars($document['document_name']); ?>
                                 </a>
                             <?php endwhile; ?>
                         </div>
                     </div>
                     
                     <?php if ($request['status'] === 'Pending'): ?>
-                        <div class="d-flex justify-content-end">
+                        <div class="justify-end">
                             <button type="button" class="btn btn-success me-2 btn-respond" onclick="showResponseForm(<?php echo $request['request_id']; ?>, 'approve')">
                                 <i class="fas fa-check me-2"></i>Approve
                             </button>
@@ -466,12 +759,12 @@ $requests_result = $conn->query($requests_sql);
     </div>
     
     <!-- Response Form Modal -->
-    <div class="modal fade" id="responseModal" tabindex="-1" aria-labelledby="responseModalTitle" aria-hidden="true">
+    <div id="responseModal" class="modal">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="responseModalTitle">Organization Request Response</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="modal-close" onclick="closeModal()">&times;</button>
                 </div>
                 <form id="responseForm" method="POST">
                     <div class="modal-body">
@@ -484,7 +777,7 @@ $requests_result = $conn->query($requests_sql);
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
                         <button type="submit" class="btn" id="confirmActionBtn">Confirm</button>
                     </div>
                 </form>
@@ -492,7 +785,6 @@ $requests_result = $conn->query($requests_sql);
         </div>
     </div>
     
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Show response form modal
         function showResponseForm(requestId, action) {
@@ -514,8 +806,21 @@ $requests_result = $conn->query($requests_sql);
                 document.getElementById('admin_response').placeholder = 'Enter a reason for rejection...';
             }
             
-            var responseModal = new bootstrap.Modal(document.getElementById('responseModal'));
-            responseModal.show();
+            // Display the modal
+            document.getElementById('responseModal').classList.add('show');
+        }
+        
+        // Close the modal
+        function closeModal() {
+            document.getElementById('responseModal').classList.remove('show');
+        }
+        
+        // Close modal when clicking outside the modal content
+        window.onclick = function(event) {
+            const modal = document.getElementById('responseModal');
+            if (event.target === modal) {
+                closeModal();
+            }
         }
     </script>
 </body>

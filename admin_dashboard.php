@@ -94,33 +94,90 @@ $top_organizations = $conn->query($sql);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        /* Layout */
         .sidebar {
             background: #0c1a36;
             color: white;
             height: 100vh;
             position: fixed;
+            width: 250px;
             padding: 20px;
+            overflow-y: auto;
         }
-        .sidebar .nav-link {
-            color: white;
-            padding: 10px 20px;
-            margin: 5px 0;
-            border-radius: 5px;
-        }
-        .sidebar .nav-link:hover {
-            background: rgba(255,255,255,0.1);
-        }
-        .sidebar .nav-link.active {
-            background: #0099ff;
-        }
+        
         .main-content {
             margin-left: 250px;
             padding: 20px;
         }
+        
+        /* Typography */
+        h1, h2, h3, h4, h5, h6 {
+            margin-bottom: 15px;
+        }
+        
+        p {
+            margin-bottom: 15px;
+        }
+        
+        /* Navigation */
+        .sidebar h3 {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .nav {
+            list-style: none;
+        }
+        
+        .nav-link {
+            display: block;
+            color: white;
+            padding: 10px 20px;
+            margin: 5px 0;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .nav-link.active {
+            background: #0099ff;
+        }
+        
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .card-body {
+            padding: 20px;
+        }
+        
+        /* Stat Cards */
         .stat-card {
             background: white;
             border-radius: 10px;
@@ -128,55 +185,268 @@ $top_organizations = $conn->query($sql);
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             margin-bottom: 20px;
         }
+        
         .stat-card i {
             font-size: 2em;
             color: #0099ff;
+            margin-bottom: 10px;
         }
-        .activity-list {
+        
+        .stat-card h3 {
+            font-size: 1.8rem;
+            margin: 5px 0;
+        }
+        
+        .stat-card p {
+            color: #6c757d;
+        }
+        
+        /* Widget Components */
+        .widget {
             background: white;
             border-radius: 10px;
-            padding: 20px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
         }
-        .activity-item {
+        
+        .widget-title {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+        
+        .widget-title i {
+            margin-right: 10px;
+            color: #0099ff;
+        }
+        
+        .widget-body {
+            padding: 15px;
+        }
+        
+        /* Data Items */
+        .recent-item {
             padding: 10px 0;
             border-bottom: 1px solid #eee;
         }
-        .activity-item:last-child {
+        
+        .recent-item:last-child {
             border-bottom: none;
         }
-        .badge-public {
-            background-color: #28a745;
+        
+        /* Utility Classes */
+        .d-flex {
+            display: flex;
+        }
+        
+        .justify-content-between {
+            justify-content: space-between;
+        }
+        
+        .align-items-center {
+            align-items: center;
+        }
+        
+        .mb-1 {
+            margin-bottom: 5px;
+        }
+        
+        .mb-3 {
+            margin-bottom: 15px;
+        }
+        
+        .mb-4 {
+            margin-bottom: 20px;
+        }
+        
+        .mt-3 {
+            margin-top: 15px;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .text-muted {
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+        
+        h6 {
+            margin: 0 0 5px 0;
+            font-size: 1rem;
+        }
+        
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border-radius: 20px;
             color: white;
         }
-        .badge-private {
+        
+        .badge-public, .badge-success {
+            background-color: #28a745;
+        }
+        
+        .badge-private, .badge-danger {
             background-color: #dc3545;
+        }
+        
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 8px 12px;
+            background-color: #e9ecef;
+            color: #333;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            line-height: 1.5;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+        }
+        
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        
+        .btn-primary {
+            background-color: #0099ff;
             color: white;
+        }
+        
+        /* Alert Messages */
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            position: relative;
         }
         
         .alert-success {
             background-color: #d4edda;
-            border-color: #c3e6cb;
             color: #155724;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
+            border: 1px solid #c3e6cb;
+        }
+        
+        /* Progress Bars */
+        .progress {
+            display: flex;
+            height: 10px;
+            overflow: hidden;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        
+        .progress-bar {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            color: #fff;
+            text-align: center;
+            white-space: nowrap;
+            background-color: #0099ff;
+            transition: width 0.6s ease;
+        }
+        
+        .bg-info {
+            background-color: #17a2b8 !important;
+        }
+        
+        .bg-success {
+            background-color: #28a745 !important;
+        }
+        
+        /* Layout Grid */
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -15px 20px -15px;
+        }
+        
+        .col-md-3 {
+            flex: 0 0 25%;
+            max-width: 25%;
+            padding: 0 15px;
+        }
+        
+        .col-md-4 {
+            flex: 0 0 33.333333%;
+            max-width: 33.333333%;
+            padding: 0 15px;
+        }
+        
+        .col-md-6 {
+            flex: 0 0 50%;
+            max-width: 50%;
+            padding: 0 15px;
+        }
+        
+        .col-md-12 {
+            flex: 0 0 100%;
+            max-width: 100%;
+            padding: 0 15px;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .col-md-3 {
+                flex: 0 0 50%;
+                max-width: 50%;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .col-md-3, .col-md-4, .col-md-6, .col-md-12 {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+            
+            .row {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
     <div class="sidebar">
-        <h3 class="mb-4">Admin Panel</h3>
-        <nav class="nav flex-column">
-            <a class="nav-link active" href="#"><i class="fas fa-home"></i> Dashboard</a>
-            <a class="nav-link" href="admin_users.php"><i class="fas fa-users"></i> Users</a>
-            <a class="nav-link" href="admin_datasets.php"><i class="fas fa-database"></i> Datasets</a>
-            <a class="nav-link" href="admin_organizations.php"><i class="fas fa-building"></i> Organizations</a>
-            <a class="nav-link" href="admin_org_requests.php"><i class="fas fa-clipboard-list"></i> Org Requests</a>
-            <a class="nav-link" href="admin_notifications.php"><i class="fas fa-bell"></i> Notifications</a>
-            <a class="nav-link" href="admin_settings.php"><i class="fas fa-cog"></i> Settings</a>
-            <a class="nav-link" href="admin_to_main.php"><i class="fas fa-globe"></i> Main Site</a>
-            <a class="nav-link" href="admin_logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        <h3>Admin Panel</h3>
+        <nav>
+            <ul class="nav">
+                <li><a class="nav-link active" href="#"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a class="nav-link" href="admin_users.php"><i class="fas fa-users"></i> Users</a></li>
+                <li><a class="nav-link" href="admin_datasets.php"><i class="fas fa-database"></i> Datasets</a></li>
+                <li><a class="nav-link" href="admin_organizations.php"><i class="fas fa-building"></i> Organizations</a></li>
+                <li><a class="nav-link" href="admin_org_requests.php"><i class="fas fa-clipboard-list"></i> Org Requests</a></li>
+                <li><a class="nav-link" href="admin_notifications.php"><i class="fas fa-bell"></i> Notifications</a></li>
+                <li><a class="nav-link" href="admin_settings.php"><i class="fas fa-cog"></i> Settings</a></li>
+                <li><a class="nav-link" href="admin_to_main.php"><i class="fas fa-globe"></i> Main Site</a></li>
+                <li><a class="nav-link" href="admin_logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
         </nav>
     </div>
 
@@ -281,7 +551,7 @@ $top_organizations = $conn->query($sql);
                                 </div>
                             <?php endwhile; ?>
                             <div class="text-center mt-3">
-                                <a href="admin_datasets.php" class="btn btn-sm btn-primary">View All Datasets</a>
+                                <a href="admin_datasets.php" class="btn btn-primary btn-sm">View All Datasets</a>
                             </div>
                         <?php endif; ?>
                     </div>
@@ -309,7 +579,7 @@ $top_organizations = $conn->query($sql);
                                             </small>
                                         </div>
                                         <div>
-                                            <span class="badge <?php echo $user['is_active'] ? 'badge-public' : 'badge-private'; ?>">
+                                            <span class="badge <?php echo $user['is_active'] ? 'badge-success' : 'badge-danger'; ?>">
                                                 <?php echo $user['is_active'] ? 'Active' : 'Inactive'; ?>
                                             </span>
                                         </div>
@@ -317,7 +587,7 @@ $top_organizations = $conn->query($sql);
                                 </div>
                             <?php endwhile; ?>
                             <div class="text-center mt-3">
-                                <a href="admin_users.php" class="btn btn-sm btn-primary">View All Users</a>
+                                <a href="admin_users.php" class="btn btn-primary btn-sm">View All Users</a>
                             </div>
                         <?php endif; ?>
                     </div>
@@ -355,11 +625,8 @@ $top_organizations = $conn->query($sql);
                                         <span><?php echo $category['dataset_count']; ?> datasets</span>
                                     </div>
                                     <div class="progress">
-                                        <div class="progress-bar bg-info" role="progressbar" 
-                                             style="width: <?php echo ($category['dataset_count'] / $max_count) * 100; ?>%" 
-                                             aria-valuenow="<?php echo $category['dataset_count']; ?>" 
-                                             aria-valuemin="0" 
-                                             aria-valuemax="<?php echo $max_count; ?>">
+                                        <div class="progress-bar bg-info" 
+                                             style="width: <?php echo ($category['dataset_count'] / $max_count) * 100; ?>%">
                                         </div>
                                     </div>
                                 </div>
@@ -397,17 +664,14 @@ $top_organizations = $conn->query($sql);
                                         <span><?php echo $org['member_count']; ?> members</span>
                                     </div>
                                     <div class="progress">
-                                        <div class="progress-bar bg-success" role="progressbar" 
-                                             style="width: <?php echo ($org['member_count'] / $max_count) * 100; ?>%" 
-                                             aria-valuenow="<?php echo $org['member_count']; ?>" 
-                                             aria-valuemin="0" 
-                                             aria-valuemax="<?php echo $max_count; ?>">
+                                        <div class="progress-bar bg-success" 
+                                             style="width: <?php echo ($org['member_count'] / $max_count) * 100; ?>%">
                                         </div>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
                             <div class="text-center mt-3">
-                                <a href="admin_organizations.php" class="btn btn-sm btn-primary">View All Organizations</a>
+                                <a href="admin_organizations.php" class="btn btn-primary btn-sm">View All Organizations</a>
                             </div>
                         <?php endif; ?>
                     </div>
@@ -425,20 +689,20 @@ $top_organizations = $conn->query($sql);
                     <div class="widget-body">
                         <div class="row">
                             <?php if ($recent_organizations->num_rows === 0): ?>
-                                <div class="col-12">
+                                <div class="col-md-12">
                                     <p class="text-muted">No organizations found</p>
                                 </div>
                             <?php else: ?>
                                 <?php while ($org = $recent_organizations->fetch_assoc()): ?>
-                                    <div class="col-md-4 mb-3">
-                                        <div class="card h-100">
+                                    <div class="col-md-4">
+                                        <div class="card">
                                             <div class="card-body">
                                                 <h5 class="card-title"><?php echo htmlspecialchars($org['name']); ?></h5>
-                                                <p class="card-text">
+                                                <p>
                                                     <i class="fas fa-users"></i> Members: <?php echo $org['member_count']; ?><br>
                                                     <i class="fas fa-calendar"></i> Created: <?php echo date('M d, Y', strtotime($org['created_at'])); ?>
                                                 </p>
-                                                <a href="admin_organizations.php?org_id=<?php echo $org['organization_id']; ?>" class="btn btn-sm btn-primary">
+                                                <a href="admin_organizations.php?org_id=<?php echo $org['organization_id']; ?>" class="btn btn-primary btn-sm">
                                                     View Members
                                                 </a>
                                             </div>
@@ -452,33 +716,5 @@ $top_organizations = $conn->query($sql);
             </div>
         </div>
     </div>
-
-    <script>
-        // User registrations chart
-        const ctx = document.getElementById('userRegistrationsChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: <?php echo json_encode(array_column(array_reverse($user_registrations), 'date')); ?>,
-                datasets: [{
-                    label: 'New Users',
-                    data: <?php echo json_encode(array_column(array_reverse($user_registrations), 'count')); ?>,
-                    borderColor: '#0099ff',
-                    tension: 0.1
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 1
-                        }
-                    }
-                }
-            }
-        });
-    </script>
 </body>
 </html>

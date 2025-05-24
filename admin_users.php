@@ -50,32 +50,81 @@ $total_pages = ceil($total_users / $per_page);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Management - Admin Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        /* Layout */
         .sidebar {
             background: #0c1a36;
             color: white;
             height: 100vh;
             position: fixed;
+            width: 250px;
             padding: 20px;
+            overflow-y: auto;
         }
-        .sidebar .nav-link {
-            color: white;
-            padding: 10px 20px;
-            margin: 5px 0;
-            border-radius: 5px;
-        }
-        .sidebar .nav-link:hover {
-            background: rgba(255,255,255,0.1);
-        }
-        .sidebar .nav-link.active {
-            background: #0099ff;
-        }
+        
         .main-content {
             margin-left: 250px;
             padding: 20px;
         }
+        
+        /* Typography */
+        h1, h2, h3, h4, h5, h6 {
+            margin-bottom: 15px;
+        }
+        
+        p {
+            margin-bottom: 10px;
+        }
+        
+        .text-muted {
+            color: #6c757d;
+        }
+        
+        /* Navigation */
+        .sidebar h3 {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .nav {
+            list-style: none;
+        }
+        
+        .nav-link {
+            display: block;
+            color: white;
+            padding: 10px 20px;
+            margin: 5px 0;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .nav-link.active {
+            background: #0099ff;
+        }
+        
+        /* User card */
         .user-card {
             background: white;
             border-radius: 10px;
@@ -83,30 +132,199 @@ $total_pages = ceil($total_users / $per_page);
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             margin-bottom: 20px;
         }
+        
+        /* Utility classes */
+        .mb-4 {
+            margin-bottom: 20px;
+        }
+        
+        /* Grid system */
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-right: -15px;
+            margin-left: -15px;
+        }
+        
+        .align-items-center {
+            align-items: center;
+        }
+        
+        .col-md-3 {
+            flex: 0 0 25%;
+            max-width: 25%;
+            padding: 0 15px;
+        }
+        
+        /* Search box */
+        .search-box {
+            margin-bottom: 20px;
+        }
+        
+        .input-group {
+            display: flex;
+            width: 100%;
+        }
+        
+        .form-control {
+            display: block;
+            width: 100%;
+            padding: 8px 12px;
+            font-size: 14px;
+            border: 1px solid #ced4da;
+            border-radius: 4px 0 0 4px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-control:focus {
+            border-color: #80bdff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border-radius: 20px;
+            color: white;
+        }
+        
+        .badge-success {
+            background-color: #28a745;
+        }
+        
+        .badge-danger {
+            background-color: #dc3545;
+        }
+        
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 8px 12px;
+            background-color: #e9ecef;
+            color: #333;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            line-height: 1.5;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+        }
+        
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        
+        .btn-primary {
+            background-color: #0099ff;
+            color: white;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .btn-warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        /* User actions */
         .user-actions {
             display: flex;
             gap: 10px;
         }
+        
+        /* Pagination */
         .pagination {
-            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            margin: 20px 0;
         }
-        .search-box {
-            margin-bottom: 20px;
+        
+        .page-item {
+            margin: 0 2px;
+        }
+        
+        .page-link {
+            display: block;
+            padding: 5px 10px;
+            background-color: white;
+            border: 1px solid #dee2e6;
+            color: #0099ff;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        
+        .page-item.active .page-link {
+            background-color: #0099ff;
+            color: white;
+            border-color: #0099ff;
+        }
+        
+        .page-link:hover {
+            background-color: #e9ecef;
+        }
+        
+        .justify-content-center {
+            justify-content: center;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .col-md-3 {
+                flex: 0 0 100%;
+                max-width: 100%;
+                margin-bottom: 10px;
+            }
+            
+            .row {
+                flex-direction: column;
+            }
+            
+            .user-actions {
+                margin-top: 10px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="sidebar">
-        <h3 class="mb-4">Admin Panel</h3>
-        <nav class="nav flex-column">
-            <a class="nav-link" href="admin_dashboard.php"><i class="fas fa-home"></i> Dashboard</a>
-            <a class="nav-link active" href="#"><i class="fas fa-users"></i> Users</a>
-            <a class="nav-link" href="admin_datasets.php"><i class="fas fa-database"></i> Datasets</a>
-            <a class="nav-link" href="admin_organizations.php"><i class="fas fa-building"></i> Organizations</a>
-            <a class="nav-link" href="admin_notifications.php"><i class="fas fa-bell"></i> Notifications</a>
-            <a class="nav-link" href="admin_settings.php"><i class="fas fa-cog"></i> Settings</a>
-            <a class="nav-link" href="admin_to_main.php"><i class="fas fa-globe"></i> Main Site</a>
-            <a class="nav-link" href="admin_logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        <h3>Admin Panel</h3>
+        <nav>
+            <ul class="nav">
+                <li><a class="nav-link" href="admin_dashboard.php"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a class="nav-link active" href="#"><i class="fas fa-users"></i> Users</a></li>
+                <li><a class="nav-link" href="admin_datasets.php"><i class="fas fa-database"></i> Datasets</a></li>
+                <li><a class="nav-link" href="admin_organizations.php"><i class="fas fa-building"></i> Organizations</a></li>
+                <li><a class="nav-link" href="admin_org_requests.php"><i class="fas fa-clipboard-list"></i> Org Requests</a></li>
+                <li><a class="nav-link" href="admin_notifications.php"><i class="fas fa-bell"></i> Notifications</a></li>
+                <li><a class="nav-link" href="admin_settings.php"><i class="fas fa-cog"></i> Settings</a></li>
+                <li><a class="nav-link" href="admin_to_main.php"><i class="fas fa-globe"></i> Main Site</a></li>
+                <li><a class="nav-link" href="admin_logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
         </nav>
     </div>
 
@@ -136,7 +354,7 @@ $total_pages = ceil($total_users / $per_page);
                     <div class="col-md-3">
                         <p><strong>Joined:</strong> <?php echo date('M d, Y', strtotime($user['date_joined'])); ?></p>
                         <p><strong>Status:</strong> 
-                            <span class="badge <?php echo $user['is_active'] ? 'bg-success' : 'bg-danger'; ?>">
+                            <span class="badge <?php echo $user['is_active'] ? 'badge-success' : 'badge-danger'; ?>">
                                 <?php echo $user['is_active'] ? 'Active' : 'Inactive'; ?>
                             </span>
                         </p>

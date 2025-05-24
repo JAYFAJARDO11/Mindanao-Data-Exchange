@@ -116,18 +116,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/error_styles.css">
     <?php include 'includes/background_styles.php'; ?>
     <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
+            font-family: Arial, sans-serif;
             background-size: cover;
             background-attachment: fixed;
             height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            color: #333;
+            line-height: 1.6;
         }
+        
+        /* Login Container */
         .login-container {
             background: white;
             padding: 40px;
@@ -136,32 +147,70 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             width: 100%;
             max-width: 400px;
         }
+        
         .login-container h2 {
             color: #0c1a36;
             margin-bottom: 30px;
             text-align: center;
+            font-weight: bold;
         }
-        .form-control {
-            border-radius: 5px;
-            padding: 12px;
+        
+        /* Form Elements */
+        .mb-3 {
             margin-bottom: 20px;
         }
-        .btn-login {
-            background: #0099ff;
-            color: white;
+        
+        .form-control {
+            display: block;
+            width: 100%;
             padding: 12px;
-            border: none;
+            font-size: 16px;
+            border: 1px solid #ced4da;
             border-radius: 5px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-control:focus {
+            border-color: #80bdff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            font-weight: 400;
+            text-align: center;
+            vertical-align: middle;
+            cursor: pointer;
+            border: 1px solid transparent;
+            padding: 12px;
+            font-size: 16px;
+            line-height: 1.5;
+            border-radius: 5px;
+            transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        
+        .btn-login {
+            background-color: #0099ff;
+            color: white;
             width: 100%;
             font-weight: bold;
         }
+        
         .btn-login:hover {
-            background: #007acc;
+            background-color: #007acc;
         }
+        
+        /* Error Messages */
         .error-message {
             color: #dc3545;
             margin-bottom: 20px;
             text-align: center;
+            padding: 10px;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
         }
     </style>
 </head>

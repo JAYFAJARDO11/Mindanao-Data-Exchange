@@ -35,18 +35,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
                 $update_stmt->bind_param("si", $new_password_hash, $admin_id);
                 
                 if ($update_stmt->execute()) {
-                    $password_message = '<div class="alert alert-success">Password updated successfully!</div>';
+                    $password_message = '<div class="alert success">Password updated successfully!</div>';
                 } else {
-                    $password_message = '<div class="alert alert-danger">Error updating password. Please try again.</div>';
+                    $password_message = '<div class="alert danger">Error updating password. Please try again.</div>';
                 }
             } else {
-                $password_message = '<div class="alert alert-danger">New password must be at least 8 characters long.</div>';
+                $password_message = '<div class="alert danger">New password must be at least 8 characters long.</div>';
             }
         } else {
-            $password_message = '<div class="alert alert-danger">New passwords do not match.</div>';
+            $password_message = '<div class="alert danger">New passwords do not match.</div>';
         }
     } else {
-        $password_message = '<div class="alert alert-danger">Current password is incorrect.</div>';
+        $password_message = '<div class="alert danger">Current password is incorrect.</div>';
     }
 }
 
@@ -72,20 +72,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_email'])) {
             
             if ($update_stmt->execute()) {
                 $_SESSION['admin_email'] = $new_email;
-                $email_message = '<div class="alert alert-success">Email updated successfully!</div>';
+                $email_message = '<div class="alert success">Email updated successfully!</div>';
                 
                 // Refresh admin info
                 $stmt->execute();
                 $admin_result = $stmt->get_result();
                 $admin = $admin_result->fetch_assoc();
             } else {
-                $email_message = '<div class="alert alert-danger">Error updating email. Please try again.</div>';
+                $email_message = '<div class="alert danger">Error updating email. Please try again.</div>';
             }
         } else {
-            $email_message = '<div class="alert alert-danger">This email is already in use by another administrator.</div>';
+            $email_message = '<div class="alert danger">This email is already in use by another administrator.</div>';
         }
     } else {
-        $email_message = '<div class="alert alert-danger">Password is incorrect.</div>';
+        $email_message = '<div class="alert danger">Password is incorrect.</div>';
     }
 }
 
@@ -105,9 +105,23 @@ $settings = [
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Settings - Mindanao Data Exchange</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        /* Layout */
         .sidebar {
             background: #0c1a36;
             color: white;
@@ -115,23 +129,53 @@ $settings = [
             position: fixed;
             padding: 20px;
             width: 250px;
+            overflow-y: auto;
         }
-        .sidebar .nav-link {
-            color: white;
-            padding: 10px 20px;
-            margin: 5px 0;
-            border-radius: 5px;
-        }
-        .sidebar .nav-link:hover {
-            background: rgba(255,255,255,0.1);
-        }
-        .sidebar .nav-link.active {
-            background: #0099ff;
-        }
+        
         .main-content {
             margin-left: 250px;
             padding: 20px;
         }
+        
+        /* Typography */
+        h1, h2, h3, h4, h5, h6 {
+            margin-bottom: 15px;
+        }
+        
+        p {
+            margin-bottom: 15px;
+        }
+        
+        /* Navigation */
+        .sidebar h3 {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .nav {
+            list-style: none;
+        }
+        
+        .nav-link {
+            display: block;
+            color: white;
+            padding: 10px 20px;
+            margin: 5px 0;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .nav-link.active {
+            background: #0099ff;
+        }
+        
+        /* Cards */
         .settings-card {
             background: white;
             border-radius: 10px;
@@ -139,21 +183,194 @@ $settings = [
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             margin-bottom: 20px;
         }
+        
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        .form-control {
+            display: block;
+            width: 100%;
+            padding: 8px 12px;
+            font-size: 14px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-control:focus {
+            border-color: #80bdff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #e9ecef;
+            color: #333;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            line-height: 1.5;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+        }
+        
+        .btn-primary {
+            background-color: #0099ff;
+            color: white;
+        }
+        
+        .btn-outline-primary {
+            background-color: transparent;
+            color: #0099ff;
+            border: 1px solid #0099ff;
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: #0099ff;
+            color: white;
+        }
+        
+        .btn-outline-secondary {
+            background-color: transparent;
+            color: #6c757d;
+            border: 1px solid #6c757d;
+        }
+        
+        .btn-outline-secondary:hover {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-outline-warning {
+            background-color: transparent;
+            color: #ffc107;
+            border: 1px solid #ffc107;
+        }
+        
+        .btn-outline-warning:hover {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        
+        /* Alert Messages */
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            position: relative;
+        }
+        
+        .alert.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert.danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        /* Tables */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        .table th, 
+        .table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        /* Grid System */
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-right: -15px;
+            margin-left: -15px;
+        }
+        
+        .col-md-6 {
+            flex: 0 0 50%;
+            max-width: 50%;
+            padding-right: 15px;
+            padding-left: 15px;
+        }
+        
+        /* Utility Classes */
+        .mb-4 {
+            margin-bottom: 20px;
+        }
+        
+        .mb-3 {
+            margin-bottom: 15px;
+        }
+        
+        /* Button Grid */
+        .button-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .col-md-6 {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+            
+            .row {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="sidebar">
-        <h3 class="mb-4">Admin Panel</h3>
-        <nav class="nav flex-column">
-            <a class="nav-link" href="admin_dashboard.php"><i class="fas fa-home"></i> Dashboard</a>
-            <a class="nav-link" href="admin_users.php"><i class="fas fa-users"></i> Users</a>
-            <a class="nav-link" href="admin_datasets.php"><i class="fas fa-database"></i> Datasets</a>
-            <a class="nav-link" href="admin_organizations.php"><i class="fas fa-building"></i> Organizations</a>
-            <a class="nav-link" href="admin_org_requests.php"><i class="fas fa-clipboard-list"></i> Org Requests</a>
-            <a class="nav-link" href="admin_notifications.php"><i class="fas fa-bell"></i> Notifications</a>
-            <a class="nav-link active" href="#"><i class="fas fa-cog"></i> Settings</a>
-            <a class="nav-link" href="admin_to_main.php"><i class="fas fa-globe"></i> Main Site</a>
-            <a class="nav-link" href="admin_logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        <h3>Admin Panel</h3>
+        <nav>
+            <ul class="nav">
+                <li><a class="nav-link" href="admin_dashboard.php"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a class="nav-link" href="admin_users.php"><i class="fas fa-users"></i> Users</a></li>
+                <li><a class="nav-link" href="admin_datasets.php"><i class="fas fa-database"></i> Datasets</a></li>
+                <li><a class="nav-link" href="admin_organizations.php"><i class="fas fa-building"></i> Organizations</a></li>
+                <li><a class="nav-link" href="admin_org_requests.php"><i class="fas fa-clipboard-list"></i> Org Requests</a></li>
+                <li><a class="nav-link" href="admin_notifications.php"><i class="fas fa-bell"></i> Notifications</a></li>
+                <li><a class="nav-link active" href="#"><i class="fas fa-cog"></i> Settings</a></li>
+                <li><a class="nav-link" href="admin_to_main.php"><i class="fas fa-globe"></i> Main Site</a></li>
+                <li><a class="nav-link" href="admin_logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
         </nav>
     </div>
 
@@ -179,16 +396,16 @@ $settings = [
                         <h5>Change Password</h5>
                         <?php echo $password_message; ?>
                         <form method="POST" action="">
-                            <div class="mb-3">
+                            <div class="form-group mb-3">
                                 <label for="current_password" class="form-label">Current Password</label>
                                 <input type="password" class="form-control" id="current_password" name="current_password" required>
                             </div>
-                            <div class="mb-3">
+                            <div class="form-group mb-3">
                                 <label for="new_password" class="form-label">New Password</label>
                                 <input type="password" class="form-control" id="new_password" name="new_password" required 
                                        pattern=".{8,}" title="Password must be at least 8 characters long">
                             </div>
-                            <div class="mb-3">
+                            <div class="form-group mb-3">
                                 <label for="confirm_password" class="form-label">Confirm New Password</label>
                                 <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
                             </div>
@@ -203,11 +420,11 @@ $settings = [
                         <h5>Change Email</h5>
                         <?php echo $email_message; ?>
                         <form method="POST" action="">
-                            <div class="mb-3">
+                            <div class="form-group mb-3">
                                 <label for="new_email" class="form-label">New Email Address</label>
                                 <input type="email" class="form-control" id="new_email" name="new_email" required>
                             </div>
-                            <div class="mb-3">
+                            <div class="form-group mb-3">
                                 <label for="email_password" class="form-label">Password</label>
                                 <input type="password" class="form-control" id="email_password" name="email_password" required>
                             </div>
@@ -290,7 +507,7 @@ $settings = [
                     
                     <div>
                         <h5>System Maintenance</h5>
-                        <div class="d-grid gap-3">
+                        <div class="button-grid">
                             <a href="#" class="btn btn-outline-primary">
                                 <i class="fas fa-database"></i> Backup Database
                             </a>
@@ -306,7 +523,5 @@ $settings = [
             </div>
         </div>
     </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-</html> 
+</html>
