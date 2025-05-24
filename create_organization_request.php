@@ -74,6 +74,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $website_url = trim($_POST['website_url']);
     $description = trim($_POST['description']);
     
+    // Handle "Other" organization type
+    if ($type === 'Other' && !empty($_POST['other_type'])) {
+        $other_type = trim($_POST['other_type']);
+        $type = "Other: " . $other_type;
+    }
+    
     // Validation
     $errors = [];
     
@@ -83,6 +89,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     if (empty($type)) {
         $errors[] = "Organization type is required";
+    }
+    
+    if ($type === 'Other' && empty($_POST['other_type'])) {
+        $errors[] = "Please specify the organization type when selecting 'Other'";
     }
     
     if (empty($contact_email)) {
@@ -668,6 +678,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </select>
             </div>
             
+            <div class="form-group" id="other-type-container" style="display: none;">
+                <label for="other_type">Please specify organization type:</label>
+                <input type="text" id="other_type" name="other_type" value="<?php echo isset($other_type) ? htmlspecialchars($other_type) : ''; ?>">
+            </div>
+            
             <div class="form-group">
                 <label for="contact_email">Contact Email*</label>
                 <input type="email" id="contact_email" name="contact_email" value="<?php echo isset($contact_email) ? htmlspecialchars($contact_email) : ''; ?>" required>
@@ -743,6 +758,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             document.getElementById('navbar-profile-icon').addEventListener('click', function() {
                 document.querySelector('.sidebar').classList.add('active');
                 document.querySelector('.sidebar-overlay').classList.add('active');
+            });
+            
+            // Show/hide other type input field
+            const typeSelect = document.getElementById('type');
+            const otherTypeContainer = document.getElementById('other-type-container');
+            const otherTypeInput = document.getElementById('other_type');
+            
+            // Check initial value
+            if (typeSelect.value === 'Other') {
+                otherTypeContainer.style.display = 'block';
+                otherTypeInput.setAttribute('required', 'required');
+            }
+            
+            // Add change event listener
+            typeSelect.addEventListener('change', function() {
+                if (this.value === 'Other') {
+                    otherTypeContainer.style.display = 'block';
+                    otherTypeInput.setAttribute('required', 'required');
+                } else {
+                    otherTypeContainer.style.display = 'none';
+                    otherTypeInput.removeAttribute('required');
+                }
             });
         });
     </script>

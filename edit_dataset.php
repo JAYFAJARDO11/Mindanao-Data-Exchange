@@ -51,6 +51,62 @@ $dataset = mysqli_fetch_assoc($result);
 $categories_sql = "SELECT * FROM datasetcategories ORDER BY name";
 $categories_result = mysqli_query($conn, $categories_sql);
 
+// Include user profile picture
+
+include 'includes/user_profile_picture.php';
+
+// Initialize the total_count variable
+
+$total_count = 0;
+
+// Get count of pending access requests for this user
+
+$request_count = 0;
+
+if (isset($_SESSION['user_id'])) {
+
+    $requestCountSql = "SELECT COUNT(*) as count FROM dataset_access_requests 
+
+                        WHERE owner_id = $user_id AND status = 'Pending'";
+
+    $requestCountResult = mysqli_query($conn, $requestCountSql);
+
+    if ($requestCountResult) {
+
+        $row = mysqli_fetch_assoc($requestCountResult);
+
+        $request_count = $row['count'];
+
+    }
+
+}
+
+// Get count of unread notifications for this user
+$notif_count = 0;
+
+if (isset($_SESSION['user_id'])) {
+
+    $notifCountSql = "SELECT COUNT(*) as count FROM user_notifications 
+
+                      WHERE user_id = $user_id AND is_read = FALSE";
+
+    $notifCountResult = mysqli_query($conn, $notifCountSql);
+
+    if ($notifCountResult) {
+
+        $row = mysqli_fetch_assoc($notifCountResult);
+
+        $notif_count = $row['count'];
+
+    }
+
+}
+
+
+
+// Total count for badge display (requests + notifications)
+
+$total_count = $request_count + $notif_count;
 // Function to properly handle newlines in descriptions
 function fixNewlines($text) {
     // First, normalize all newlines to a standard format
@@ -129,10 +185,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $original_name = $_FILES['files']['name'][$i];
                         $sanitized_name = preg_replace('/[^a-zA-Z0-9_.-]/', '_', $original_name);
                         
-                        // Create unique filename
-                        $file_extension = pathinfo($sanitized_name, PATHINFO_EXTENSION);
-                        $new_file_name = "file_" . ($i + 1) . "_" . time() . "." . $file_extension;
-                        $target_file = $version_dir . '/' . $new_file_name;
+                        // Use original filename instead of generating a new one
+                        $target_file = $version_dir . '/' . $sanitized_name;
                         
                         if (move_uploaded_file($_FILES['files']['tmp_name'][$i], $target_file)) {
                             $uploaded_files[] = [
@@ -224,6 +278,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $description = fixNewlines($description);
             $description = htmlspecialchars($description, ENT_QUOTES, 'UTF-8');
             
+            // For simple updates, we don't process any file uploads
+            // Just update the metadata without changing the file path
             $updateDatasetSql = "
                 UPDATE datasets 
                 SET title = ?, description = ?, start_period = ?, end_period = ?,
@@ -247,7 +303,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
             mysqli_stmt_execute($stmt);
 
-            // Update current version record
+            // Update current version record without changing the file path
             $updateVersionSql = "
                 UPDATE datasetversions 
                 SET title = ?, description = ?, start_period = ?, end_period = ?,
@@ -336,33 +392,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 10px 5%;
+            padding: 10px 5%; /* Adjusted padding for a more compact navbar */
             padding-left: 30px;
-            background-color: #0099ff;
-            color: #ffffff;
+            background-color: #0099ff; /* Transparent background */
+            color: #cfd9ff;
             border-radius: 20px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             position: relative;
             margin: 10px 0;
             backdrop-filter: blur(10px);
-            max-width: 1200px;
-            width: 95%;
-            margin-top: 30px;
-            margin-left: auto;
-            margin-right: auto;
+            max-width: 1200px; /* Limit the maximum width */
+            width: 100%; /* Ensure it takes up the full width but doesn't exceed 1200px */
+            margin-top:30px;
+            margin-left: auto; /* Center align the navbar */
+            margin-right: auto; /* Center align the navbar */
             font-weight: bold;
+            z-index: 1000;
         }
 
         .logo {
             display: flex;
             align-items: center;
-            gap: 15px;
         }
 
         .logo img {
             height: auto;
-            width: 80px;
+            width: 80px; /* Adjust logo size */
             max-width: 100%;
+            margin-right: 15px;
+        }
+
+        .logo h2 {
+            color: white;
+            margin: 0;
+            font-size: 22px;
+            white-space: nowrap;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
         }
 
         .nav-links a {
@@ -370,14 +439,153 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin-left: 20px;
             text-decoration: none;
             font-size: 18px;
-            transition: transform 0.3s ease, color 0.3s;
-            padding: 8px 15px;
-            border-radius: 8px;
+            transition: transform 0.3s ease; /* Smooth transition for scaling */
         }
 
         .nav-links a:hover {
-            transform: scale(1.05);
-            background-color: rgba(255, 255, 255, 0.15);
+            transform: scale(1.2); /* Scale up on hover */
+        }
+        
+        /* Mobile menu toggle button */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .mobile-menu-toggle i {
+            display: block;
+        }
+
+        /* Responsive styles for the navbar */
+        @media screen and (max-width: 768px) {
+            .navbar {
+                padding: 10px;
+                border-radius: 15px;
+                width: 90%; /* Smaller width on mobile */
+                max-width: 90%;
+                position: relative;
+                z-index: 2; /* Give navbar highest z-index */
+            }
+            
+            .mobile-menu-toggle {
+                display: block;
+                position: absolute;
+                right: 15px;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+            
+            .logo {
+                flex-direction: row;
+                align-items: center;
+                text-align: center;
+                max-width: 80%;
+            }
+            
+            .logo img {
+                width: 50px;
+                margin-right: 12px;
+            }
+            
+            .logo h2 {
+                margin: 0;
+                font-size: 22px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            
+            .nav-links {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                flex-direction: column;
+                background-color: #0099ff;
+                padding: 10px 0;
+                border-radius: 0 0 15px 15px;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+                display: none;
+                z-index: 9999; /* Same as navbar to ensure it stays on top */
+            }
+            
+            .nav-links.active {
+                display: flex;
+            }
+            
+            .nav-links a {
+                width: 100%;
+                text-align: center;
+                padding: 10px 0;
+                margin: 0;
+            }
+            
+            .profile-icon {
+                margin: 10px auto 0;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .navbar {
+                padding: 8px 10px;
+            }
+            
+            .logo img {
+                width: 45px;
+                margin-right: 10px;
+            }
+            
+            .logo h2 {
+                font-size: 18px;
+                text-align: center;
+            }
+        }
+
+        /* Profile icon styles */
+        .profile-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: white; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 70px;
+            position: relative;
+        }
+        
+        .profile-icon img {
+            width: 150%;
+            height: auto;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+        }
+        
+        .profile-icon img:hover {
+            transform: scale(1.2); /* Slightly enlarge the image on hover */
+        }
+        
+        /* Notification badge styles */
+        .navbar-notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #ff3b30;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
         }
 
         #wrapper {
@@ -700,14 +908,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 
     <div class="container">
-        <header class="navbar">
+    <header class="navbar">
             <div class="logo">
                 <img src="images/mdx_logo.png" alt="Mangasay Data Exchange Logo">
                 <h2>Edit Dataset</h2>
             </div>
-            <nav class="nav-links">
-                <a href="homelogin.php">HOME</a>
+            <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <nav class="nav-links" id="nav-links">
+                <a href="HomeLogin.php">HOME</a>
+                <a href="datasets.php">ALL DATASETS</a>
                 <a href="mydatasets.php">MY DATASETS</a>
+                <div class="profile-icon" id="navbar-profile-icon">
+                    <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile">
+                    <?php if ($total_count > 0): ?>
+                    <span class="navbar-notification-badge"><?php echo $total_count; ?></span>
+                    <?php endif; ?>
+                </div>
             </nav>
         </header>
 
@@ -788,16 +1006,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
 
-                <div class="form-section">
+                <div class="form-section file-upload-section" style="display: none;">
                     <h3>Files</h3>
                     <div class="file-upload-container">
                         <input type="file" name="files[]" id="files" multiple>
                         <div id="fileList" class="file-list"></div>
                     </div>
-                    <p class="form-help">Select new files to upload. Leave empty to keep existing files.</p>
+                    <p class="form-help">Select new files to upload for the new version.</p>
                 </div>
 
-                <div class="form-section version-notes">
+                <div class="form-section version-notes" style="display: none;">
                     <h3>Version Change Notes</h3>
                     <div class="form-group">
                         <label for="change_notes">Describe what changed in this version:</label>
@@ -831,12 +1049,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             });
         });
 
-        // Show/hide version notes based on update type
+        // Show/hide version notes and file upload section based on update type
         document.querySelectorAll('input[name="update_type"]').forEach(radio => {
             radio.addEventListener('change', function() {
                 const versionNotes = document.querySelector('.version-notes');
-                versionNotes.style.display = this.value === 'new_version' ? 'block' : 'none';
+                const fileUploadSection = document.querySelector('.file-upload-section');
+                
+                if (this.value === 'new_version') {
+                    versionNotes.style.display = 'block';
+                    fileUploadSection.style.display = 'block';
+                } else {
+                    versionNotes.style.display = 'none';
+                    fileUploadSection.style.display = 'none';
+                }
             });
+        });
+        
+        // Initialize the form based on the default selected radio button
+        document.addEventListener('DOMContentLoaded', function() {
+            const selectedUpdateType = document.querySelector('input[name="update_type"]:checked').value;
+            const versionNotes = document.querySelector('.version-notes');
+            const fileUploadSection = document.querySelector('.file-upload-section');
+            
+            if (selectedUpdateType === 'new_version') {
+                versionNotes.style.display = 'block';
+                fileUploadSection.style.display = 'block';
+            } else {
+                versionNotes.style.display = 'none';
+                fileUploadSection.style.display = 'none';
+            }
         });
         
         // Process description before form submission to ensure newlines are preserved
@@ -850,6 +1091,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 descriptionTextarea.value = cleanedValue;
             }
         });
+    
+        // Mobile menu toggle functionality
+        document.addEventListener("DOMContentLoaded", function() {
+            // Mobile menu toggle
+            const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+            const navLinks = document.getElementById('nav-links');
+            
+            if (mobileMenuToggle && navLinks) {
+                mobileMenuToggle.addEventListener('click', function(e) {
+                    e.stopPropagation(); // Prevent event from bubbling up
+                    navLinks.classList.toggle('active');
+                });
+            }
+            
+            // Close menu when clicking outside
+            document.addEventListener('click', function(event) {
+                const isClickInsideNavbar = event.target.closest('.navbar');
+                if (!isClickInsideNavbar && navLinks && navLinks.classList.contains('active')) {
+                    navLinks.classList.remove('active');
+                }
+            });
+            
+            // Profile icon click handler for sidebar
+            const profileIcon = document.getElementById('navbar-profile-icon');
+            if (profileIcon) {
+                profileIcon.addEventListener('click', function() {
+                    const sidebar = document.querySelector('.sidebar');
+                    const sidebarOverlay = document.querySelector('.sidebar-overlay');
+                    if (sidebar && sidebarOverlay) {
+                        sidebar.classList.add('active');
+                        sidebarOverlay.classList.add('active');
+                    }
+                });
+            }
+        });
     </script>
+    
+    <?php include 'sidebar.php'; ?>
 </body>
 </html> 

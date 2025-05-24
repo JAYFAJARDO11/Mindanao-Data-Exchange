@@ -2071,13 +2071,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 <input type="text" name="location" id="location" value="<?php echo htmlspecialchars($dataset['location']); ?>" required>
             </div>
 
-            <div class="form-group">
+            <div class="form-group file-upload-section" style="display: none;">
                 <label for="files">Files:</label>
                 <div class="file-upload-container">
                     <input type="file" name="files[]" id="files" multiple>
                     <div id="fileList" class="file-list"></div>
                 </div>
-                <p class="form-help">Select new files to upload. Leave empty to keep existing files.</p>
+                <p class="form-help">Select new files to upload for the new version.</p>
             </div>
 
             <div class="form-group version-notes" style="display: none;">
@@ -2183,8 +2183,31 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('input[name="update_type"]').forEach(radio => {
         radio.addEventListener('change', function() {
             const versionNotes = document.querySelector('.version-notes');
-            versionNotes.style.display = this.value === 'new_version' ? 'block' : 'none';
+            const fileUploadSection = document.querySelector('.file-upload-section');
+            
+            if (this.value === 'new_version') {
+                versionNotes.style.display = 'block';
+                fileUploadSection.style.display = 'block';
+            } else {
+                versionNotes.style.display = 'none';
+                fileUploadSection.style.display = 'none';
+            }
         });
+    });
+    
+    // Initialize form display based on default selected radio button
+    document.addEventListener('DOMContentLoaded', function() {
+        const selectedUpdateType = document.querySelector('input[name="update_type"]:checked').value;
+        const versionNotes = document.querySelector('.version-notes');
+        const fileUploadSection = document.querySelector('.file-upload-section');
+        
+        if (selectedUpdateType === 'new_version') {
+            versionNotes.style.display = 'block';
+            fileUploadSection.style.display = 'block';
+        } else {
+            versionNotes.style.display = 'none';
+            fileUploadSection.style.display = 'none';
+        }
     });
 </script>
 

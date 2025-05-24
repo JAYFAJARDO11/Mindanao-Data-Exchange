@@ -10,6 +10,35 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
+// Initialize the total_count variable
+$total_count = 0;
+
+// Get count of pending access requests for this user
+$request_count = 0;
+$requestCountSql = "SELECT COUNT(*) as count FROM dataset_access_requests 
+                    WHERE owner_id = $user_id AND status = 'Pending'";
+$requestCountResult = mysqli_query($conn, $requestCountSql);
+if ($requestCountResult) {
+    $row = mysqli_fetch_assoc($requestCountResult);
+    $request_count = $row['count'];
+}
+
+// Get count of unread notifications for this user
+$notif_count = 0;
+$notifCountSql = "SELECT COUNT(*) as count FROM user_notifications 
+                  WHERE user_id = $user_id AND is_read = FALSE";
+$notifCountResult = mysqli_query($conn, $notifCountSql);
+if ($notifCountResult) {
+    $row = mysqli_fetch_assoc($notifCountResult);
+    $notif_count = $row['count'];
+}
+
+// Total count for badge display (requests + notifications)
+$total_count = $request_count + $notif_count;
+
+// Include user profile picture
+include 'includes/user_profile_picture.php';
+
 // Check if the user is the organization owner (creator) or a moderator
 $check_owner_sql = "SELECT u.organization_id, o.name, o.auto_accept, o.created_by,
                    (o.created_by = ?) AS is_owner
@@ -829,6 +858,51 @@ echo "<!-- Total requests in system: " . $allRequestsCount . " -->";
                 min-height: 80px;
             }
         }
+        
+        .profile-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: white; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 70px;
+            position: relative;
+        }
+        
+        .profile-icon img {
+            width: 150%;
+            height: auto;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+        }
+        
+        .profile-icon img:hover {
+            transform: scale(1.2); /* Slightly enlarge the image on hover */
+        }
+        
+        /* Notification badge styles */
+        .navbar-notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #ff3b30;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            padding: 0;
+            line-height: 18px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -844,7 +918,12 @@ echo "<!-- Total requests in system: " . $allRequestsCount . " -->";
             <a href="HomeLogin.php">HOME</a>
             <a href="datasets.php">ALL DATASETS</a>
             <a href="mydatasets.php">MY DATASETS</a>
-            <a href="user_settings.php"><i class="fas fa-user-circle"></i></a>
+            <div class="profile-icon" id="navbar-profile-icon" style="position: relative;">
+                <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile">
+                <?php if ($total_count > 0): ?>
+                    <span class="navbar-notification-badge" style="position: absolute; top: -5px; right: -5px;"><?php echo $total_count; ?></span>
+                <?php endif; ?>
+            </div>
         </nav>
     </header>
     
@@ -997,6 +1076,8 @@ echo "<!-- Total requests in system: " . $allRequestsCount . " -->";
         </div>
     </div>
 
+    <?php include 'sidebar.php'; ?>
+
     <script>
         // Show request message modal
         function showMessageModal(requestId) {
@@ -1104,6 +1185,19 @@ echo "<!-- Total requests in system: " . $allRequestsCount . " -->";
                     navLinks.classList.remove('active');
                 }
             });
+            
+            // Profile icon click handler
+            const profileIcon = document.getElementById('navbar-profile-icon');
+            if (profileIcon) {
+                profileIcon.addEventListener('click', function() {
+                    const sidebar = document.querySelector('.sidebar');
+                    const sidebarOverlay = document.querySelector('.sidebar-overlay');
+                    if (sidebar && sidebarOverlay) {
+                        sidebar.classList.add('active');
+                        sidebarOverlay.classList.add('active');
+                    }
+                });
+            }
         });
     </script>
 </body>
