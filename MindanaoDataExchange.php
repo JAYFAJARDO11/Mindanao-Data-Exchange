@@ -414,7 +414,7 @@ $sources_count = $row_sources['unique_sources']; // Store the unique sources cou
     <div id="wrapper">
         <header class="mdx-navbar-new">
             <div class="mdx-logo">
-                <img src="images/mdx_logo.png" alt="Mangasay Data Exchange Logo">
+                <img src="images/mdx_logo.png" alt="Mindanao Data Exchange Logo">
             </div>
 
             <button class="mdx-menu-toggle" id="mobile-menu-toggle">
@@ -427,7 +427,7 @@ $sources_count = $row_sources['unique_sources']; // Store the unique sources cou
             </nav>
         </header>
         <main class="wrapper">
-            <h1>Mangasay <br> Data Exchange </h1>
+            <h1>Mindanao <br> Data Exchange </h1>
             <p id="tagline">Discover, Share, and Transform Data Seamlessly.</p>
             <div class="stats-box">
                 <div class="stat">
@@ -487,7 +487,7 @@ $sources_count = $row_sources['unique_sources']; // Store the unique sources cou
         <div class="footer-container">
             <!-- Left section with copyright -->
             <div class="footer-column">
-                <h3 class="footer-heading">Mangasay Data Exchange</h3>
+                <h3 class="footer-heading">Mindanao Data Exchange</h3>
                 <div class="footer-divider"></div>
                 <p class="footer-text">&copy; <?php echo date('Y'); ?> MDX</p>
                 <p class="footer-text">All Rights Reserved</p>

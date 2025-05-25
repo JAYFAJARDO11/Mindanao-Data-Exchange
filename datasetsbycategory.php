@@ -12,6 +12,34 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
+
+$categoryId = $_GET['category_id'] ?? null;
+
+if (!checkCategoryExists($conn, $categoryId)) {
+    http_response_code(403); // optional: set HTTP status
+    include __DIR__ . '/5.php'; // show 4.php but KEEP the URL
+    exit();
+}
+
+// Continue with normal page logic...
+
+function checkCategoryExists($conn, $categoryId) {
+    if (!$categoryId || !is_numeric($categoryId)) return false;
+
+    $stmt = $conn->prepare("SELECT 1 FROM datasetcategories WHERE category_id = ? LIMIT 1");
+    if (!$stmt) return false;
+
+    $stmt->bind_param("i", $categoryId);
+    $stmt->execute();
+    $stmt->store_result();
+
+    $exists = $stmt->num_rows > 0;
+    $stmt->close();
+
+    return $exists;
+}
+
+
 // Include user profile picture
 include 'includes/user_profile_picture.php';
 

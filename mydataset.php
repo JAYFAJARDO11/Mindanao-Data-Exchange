@@ -5,11 +5,41 @@ include('db_connection.php');
 // Include session update to ensure organization_id is synchronized
 include 'update_session.php';
 
+$id = $_GET['id'] ?? null;
+$title = $_GET['title'] ?? null;
+
+if (!checkDatasetExists($conn, $id, $title)) {
+    // Set HTTP status but don't redirect - keep the original URL
+    http_response_code(404); // or 403 if you prefer
+    
+    // Include the error page content instead of redirecting
+    include '1.php'; // or whatever your error page is
+    exit();
+}
+
+// Continue with normal page logic...
+
+function checkDatasetExists($conn, $id, $title) {
+    if (!$id || !$title) return false;
+
+    $stmt = $conn->prepare("SELECT 1 FROM datasets WHERE dataset_id = ? AND title = ? LIMIT 1");
+    if (!$stmt) return false;
+
+    $stmt->bind_param("is", $id, $title);
+    $stmt->execute();
+    $stmt->store_result();
+    
+    $exists = $stmt->num_rows > 0;
+    $stmt->close();
+
+    return $exists;
+}
+
 // Check if the user is logged in (ensure 'user_id' is set in the session)
 if (!isset($_SESSION['user_id'])) {
-    // Redirect to login page if not authenticated
-    header("Location: login.php");
-    exit();
+  // Redirect to login page if not authenticated
+  header("Location: login.php");
+  exit();
 }
 
 $user_id = $_SESSION['user_id'] ?? null;

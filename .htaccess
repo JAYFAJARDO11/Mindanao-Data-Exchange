@@ -1,0 +1,32 @@
+RewriteEngine On
+
+# Prevent processing of the error handler itself to avoid loops
+RewriteCond %{REQUEST_URI} ^/Mindanao-Data-Exchange/3\.php$ [NC]
+RewriteRule ^ - [L]
+
+# 1. Remove trailing slash after any PHP file (e.g., datasets.php/)
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteCond %{REQUEST_URI} ^(.+\.php)/$
+RewriteRule ^ %1 [R=301,L]
+
+# 2. Redirect PHP files with PATH_INFO to error handler (but exclude the error handler itself)
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteCond %{REQUEST_FILENAME} \.php$
+RewriteCond %{REQUEST_URI} !^/Mindanao-Data-Exchange/3\.php$ [NC]
+RewriteCond %{THE_REQUEST} \s/+[^?\s]*\.php/[^?\s]+ [NC]
+RewriteRule ^ /Mindanao-Data-Exchange/3.php [L]
+
+# 3. Handle clean URLs - allow PHP files to be accessed without extension
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^(.*)$ $1.php [L]
+
+# 4. Redirect requests for missing files or directories to error handler
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} !^/Mindanao-Data-Exchange/3\.php$ [NC]
+RewriteRule ^ /Mindanao-Data-Exchange/3.php [L]
+
+# 5. Custom error documents
+ErrorDocument 404 /Mindanao-Data-Exchange/3.php
